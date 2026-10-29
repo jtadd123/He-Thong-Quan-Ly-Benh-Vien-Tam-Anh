@@ -69,6 +69,11 @@ use App\Http\Controllers\BiomedicalAndInfectionController;
 use App\Http\Controllers\MaternityInfantOncologyController;
 use App\Http\Controllers\AdvancedClinicalPharmacyController;
 use App\Http\Controllers\RehabTraditionalEsgController;
+use App\Http\Controllers\AiClinicalDecisionController;
+use App\Http\Controllers\AdvancedSpecialtyController;
+use App\Http\Controllers\HospitalOperationsController;
+use App\Http\Controllers\FinanceHrController;
+use App\Http\Controllers\PatientExperienceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -483,6 +488,49 @@ Route::middleware(['auth', 'role:receptionist,admin'])->prefix('reception')->nam
     Route::post('/rehab-esg/jaundice', [RehabTraditionalEsgController::class, 'storeBhutaniEvaluation'])->name('rehab-esg.jaundice');
     Route::post('/rehab-esg/milk-batch', [RehabTraditionalEsgController::class, 'storeMilkBatch'])->name('rehab-esg.milk-batch');
     Route::post('/rehab-esg/radiation', [RehabTraditionalEsgController::class, 'storeRadiationLog'])->name('rehab-esg.radiation');
+
+    // 3.48. AI & Quyết Định Lâm Sàng Thông Minh (Sepsis AI, Rules Engine, ICD-10, Med Rec, Fluid Balance, Anticoagulation)
+    Route::get('/ai-clinical-decision', [AiClinicalDecisionController::class, 'index'])->name('ai-clinical-decision.index');
+    Route::post('/ai-clinical-decision/sepsis', [AiClinicalDecisionController::class, 'storeSepsis'])->name('ai-clinical-decision.sepsis');
+    Route::post('/ai-clinical-decision/clinical-rule', [AiClinicalDecisionController::class, 'storeClinicalRule'])->name('ai-clinical-decision.clinical-rule');
+    Route::post('/ai-clinical-decision/icd10', [AiClinicalDecisionController::class, 'storeIcd10'])->name('ai-clinical-decision.icd10');
+    Route::post('/ai-clinical-decision/med-reconciliation', [AiClinicalDecisionController::class, 'storeMedReconciliation'])->name('ai-clinical-decision.med-reconciliation');
+    Route::post('/ai-clinical-decision/fluid-balance', [AiClinicalDecisionController::class, 'storeFluidBalance'])->name('ai-clinical-decision.fluid-balance');
+    Route::post('/ai-clinical-decision/anticoagulation', [AiClinicalDecisionController::class, 'storeAnticoagulation'])->name('ai-clinical-decision.anticoagulation');
+
+    // 3.49. Quản Lý Lâm Sàng Chuyên Khoa Sâu (Stroke Pathway, STEMI, Anesthesia, Ventilator, Wound, Pain, NICU, Mental, Liver, Diabetic Foot)
+    Route::get('/advanced-specialty', [AdvancedSpecialtyController::class, 'index'])->name('advanced-specialty.index');
+    Route::post('/advanced-specialty/stroke', [AdvancedSpecialtyController::class, 'storeStroke'])->name('advanced-specialty.stroke');
+    Route::post('/advanced-specialty/stemi', [AdvancedSpecialtyController::class, 'storeStemi'])->name('advanced-specialty.stemi');
+    Route::post('/advanced-specialty/anesthesia', [AdvancedSpecialtyController::class, 'storeAnesthesia'])->name('advanced-specialty.anesthesia');
+    Route::post('/advanced-specialty/ventilator', [AdvancedSpecialtyController::class, 'storeVentilator'])->name('advanced-specialty.ventilator');
+    Route::post('/advanced-specialty/wound-care', [AdvancedSpecialtyController::class, 'storeWoundCare'])->name('advanced-specialty.wound-care');
+    Route::post('/advanced-specialty/pain', [AdvancedSpecialtyController::class, 'storePainAssessment'])->name('advanced-specialty.pain');
+    Route::post('/advanced-specialty/nicu', [AdvancedSpecialtyController::class, 'storeNicu'])->name('advanced-specialty.nicu');
+    Route::post('/advanced-specialty/mental-health', [AdvancedSpecialtyController::class, 'storeMentalHealth'])->name('advanced-specialty.mental-health');
+    Route::post('/advanced-specialty/liver-score', [AdvancedSpecialtyController::class, 'storeLiverScore'])->name('advanced-specialty.liver-score');
+    Route::post('/advanced-specialty/diabetic-foot', [AdvancedSpecialtyController::class, 'storeDiabeticFoot'])->name('advanced-specialty.diabetic-foot');
+
+    // 3.50. Vận Hành Bệnh Viện & Hậu Cần Thông Minh (OR Block, Porter Transport, Dietary Orders)
+    Route::get('/hospital-operations', [HospitalOperationsController::class, 'index'])->name('hospital-operations.index');
+    Route::post('/hospital-operations/or-schedule', [HospitalOperationsController::class, 'storeOrSchedule'])->name('hospital-operations.or-schedule');
+    Route::post('/hospital-operations/porter-request', [HospitalOperationsController::class, 'storePorterRequest'])->name('hospital-operations.porter-request');
+    Route::post('/hospital-operations/dietary-order', [HospitalOperationsController::class, 'storeDietaryOrder'])->name('hospital-operations.dietary-order');
+
+    // 3.51. Tài Chính & Quản Trị Y Tế Nâng Cao (DRG Billing, Research Projects)
+    Route::get('/finance-hr', [FinanceHrController::class, 'index'])->name('finance-hr.index');
+    Route::post('/finance-hr/drg-billing', [FinanceHrController::class, 'storeDrgBilling'])->name('finance-hr.drg-billing');
+    Route::post('/finance-hr/research-project', [FinanceHrController::class, 'storeResearchProject'])->name('finance-hr.research-project');
+
+    // 3.52. Trải Nghiệm Bệnh Nhân & Chăm Sóc Số (Digital Twin, Telehealth, Discharge, Follow-up, Campaign, Loyalty, Chronic Cohort)
+    Route::get('/patient-experience', [PatientExperienceController::class, 'index'])->name('patient-experience.index');
+    Route::post('/patient-experience/digital-twin', [PatientExperienceController::class, 'storeDigitalTwin'])->name('patient-experience.digital-twin');
+    Route::post('/patient-experience/telehealth', [PatientExperienceController::class, 'storeTelehealth'])->name('patient-experience.telehealth');
+    Route::post('/patient-experience/discharge-checklist', [PatientExperienceController::class, 'storeDischargeChecklist'])->name('patient-experience.discharge-checklist');
+    Route::post('/patient-experience/followup', [PatientExperienceController::class, 'storeFollowup'])->name('patient-experience.followup');
+    Route::post('/patient-experience/screening-campaign', [PatientExperienceController::class, 'storeScreeningCampaign'])->name('patient-experience.screening-campaign');
+    Route::post('/patient-experience/loyalty-points', [PatientExperienceController::class, 'storeLoyaltyPoints'])->name('patient-experience.loyalty-points');
+    Route::post('/patient-experience/chronic-cohort', [PatientExperienceController::class, 'storeChronicCohort'])->name('patient-experience.chronic-cohort');
 });
 
 // Cổng Công Khai Theo Dõi Trạng Thái Phẫu Thuật Cho Người Thân Tại Sảnh Chờ

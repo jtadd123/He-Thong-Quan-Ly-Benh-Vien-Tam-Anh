@@ -412,6 +412,31 @@
                             <i class="bi bi-tree text-success"></i> PHCN, Đông Y YHCT & ESG
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('reception/ai-clinical-decision*') ? 'active' : '' }}" href="{{ route('reception.ai-clinical-decision.index') }}">
+                            <i class="bi bi-cpu text-primary"></i> AI Quyết Định CDSS & Sepsis
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('reception/advanced-specialty*') ? 'active' : '' }}" href="{{ route('reception.advanced-specialty.index') }}">
+                            <i class="bi bi-diagram-3-fill text-danger"></i> Lâm Sàng Chuyên Khoa Sâu
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('reception/hospital-operations*') ? 'active' : '' }}" href="{{ route('reception.hospital-operations.index') }}">
+                            <i class="bi bi-buildings text-warning"></i> Vận Hành & Hậu Cần Thông Minh
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('reception/finance-hr*') ? 'active' : '' }}" href="{{ route('reception.finance-hr.index') }}">
+                            <i class="bi bi-cash-coin text-success"></i> Tài Chính & DRG Y Tế
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('reception/patient-experience*') ? 'active' : '' }}" href="{{ route('reception.patient-experience.index') }}">
+                            <i class="bi bi-person-heart text-info"></i> Trải Nghiệm & Chăm Sóc Số
+                        </a>
+                    </li>
 
                     <li class="sidebar-heading">Báo Cáo & Liên Thông</li>
                     <li class="nav-item">
@@ -619,12 +644,12 @@
                             <i class="bi bi-github fs-3 text-dark"></i>
                             <div>
                                 <strong class="text-dark">Theo dõi tiến độ trực tiếp trên GitHub:</strong>
-                                <div class="small text-muted">Pull Request #4 trên kho lưu trữ chính thức đã tự động cập nhật toàn bộ mã nguồn mới nhất.</div>
+                                <div class="small text-muted">Pull Request #6 trên kho lưu trữ chính thức đã tự động cập nhật toàn bộ mã nguồn mới nhất.</div>
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <a href="https://github.com/quy0358/He-Thong-Quan-Ly-Benh-Vien-Tam-Anh/pull/4" target="_blank" class="btn btn-dark btn-sm rounded-pill px-3">
-                                <i class="bi bi-box-arrow-up-right me-1"></i> Mở GitHub PR #4
+                            <a href="https://github.com/quy0358/He-Thong-Quan-Ly-Benh-Vien-Tam-Anh/pull/6" target="_blank" class="btn btn-dark btn-sm rounded-pill px-3">
+                                <i class="bi bi-box-arrow-up-right me-1"></i> Mở GitHub PR #6
                             </a>
                         </div>
                     </div>
@@ -818,17 +843,102 @@
                                 </ul>
                             </div>
                         </div>
+
+                        <!-- Nhóm 13 -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-0 shadow-sm h-100 p-3 bg-white rounded-3">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="badge bg-primary rounded-circle p-2 text-white"><i class="bi bi-cpu-fill"></i></span>
+                                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">13. AI CDSS, Sepsis & Rules Engine</h6>
+                                </div>
+                                <ul class="list-unstyled small text-secondary mb-0 ps-2" style="font-size: 0.8rem; line-height: 1.6;">
+                                    <li>✓ Dự báo Sepsis sớm qSOFA & SOFA liên tục thời gian thực</li>
+                                    <li>✓ Wells PE/DVT, HEART Score đánh giá đau ngực cấp MACE</li>
+                                    <li>✓ Mã hóa bệnh án ICD-10 tự động bằng AI NLP</li>
+                                    <li>✓ Đối chiếu thuốc Medication Reconciliation & Cân bằng dịch</li>
+                                    <li>✓ Phác đồ chống đông Warfarin/NOACs & HAS-BLED xuất huyết</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Nhóm 14 -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-0 shadow-sm h-100 p-3 bg-white rounded-3">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="badge bg-danger rounded-circle p-2 text-white"><i class="bi bi-lightning-charge-fill"></i></span>
+                                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">14. Đột Quỵ, STEMI, Gây Mê & Máy Thở</h6>
+                                </div>
+                                <ul class="list-unstyled small text-secondary mb-0 ps-2" style="font-size: 0.8rem; line-height: 1.6;">
+                                    <li>✓ Stroke Giờ Vàng Door-to-Needle ≤60p & ASPECTS/NIHSS</li>
+                                    <li>✓ STEMI Cathlab Kích hoạt khẩn Door-to-Balloon ≤90p</li>
+                                    <li>✓ Hồ sơ gây mê điện tử AIMS, ASA, Mallampati & Aldrete</li>
+                                    <li>✓ Berlin ARDS, kiểm soát Driving Pressure & Cai máy SBT</li>
+                                    <li>✓ Theo dõi trẻ non tháng NICU, Apgar, dịch & Calorie</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Nhóm 15 -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-0 shadow-sm h-100 p-3 bg-white rounded-3">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="badge bg-warning rounded-circle p-2 text-dark"><i class="bi bi-bandaid-fill"></i></span>
+                                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">15. Chăm Sóc Vết Thương, Đau & Xơ Gan</h6>
+                                </div>
+                                <ul class="list-unstyled small text-secondary mb-0 ps-2" style="font-size: 0.8rem; line-height: 1.6;">
+                                    <li>✓ Loét tì đè PUSH Tool & Thang đo nguy cơ Braden</li>
+                                    <li>✓ Bậc thang giảm đau WHO, VAS/NRS & Đánh giá sau can thiệp</li>
+                                    <li>✓ Sàng lọc tâm thần PHQ-9, GAD-7 & An toàn tự sát C-SSRS</li>
+                                    <li>✓ Xơ gan Child-Pugh, MELD-Na tính tỷ lệ tử vong 3 tháng</li>
+                                    <li>✓ Bàn chân đái tháo đường Wagner Grade & Chỉ số mạch ABI</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Nhóm 16 -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-0 shadow-sm h-100 p-3 bg-white rounded-3">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="badge bg-secondary rounded-circle p-2 text-white"><i class="bi bi-hospital"></i></span>
+                                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">16. Vận Hành Phòng Mổ & Hậu Cần Dinh Dưỡng</h6>
+                                </div>
+                                <ul class="list-unstyled small text-secondary mb-0 ps-2" style="font-size: 0.8rem; line-height: 1.6;">
+                                    <li>✓ Lịch mổ Block Scheduling, tính công suất OR & Turnover time</li>
+                                    <li>✓ Điều phối hộ lý Porter Tracking theo SLA khẩn cấp</li>
+                                    <li>✓ Suất ăn bệnh lý tính Calorie, Protein, BMI & Hạn chế muối</li>
+                                    <li>✓ Báo cáo chất lượng dịch vụ vận chuyển bệnh nhân</li>
+                                    <li>✓ Kiểm soát tồn trữ & Quản lý thiết bị chuyên dụng</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Nhóm 17 -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-0 shadow-sm h-100 p-3 bg-white rounded-3">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="badge bg-info rounded-circle p-2 text-white"><i class="bi bi-person-bounding-box"></i></span>
+                                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">17. DRG, Nghiên Cứu, Digital Twin & Telehealth</h6>
+                                </div>
+                                <ul class="list-unstyled small text-secondary mb-0 ps-2" style="font-size: 0.8rem; line-height: 1.6;">
+                                    <li>✓ Thanh toán DRG nhóm chẩn đoán & Trọng số CMI, Outlier</li>
+                                    <li>✓ Quản lý đề tài thử nghiệm lâm sàng GCP & Ngân sách grant</li>
+                                    <li>✓ Bản sao số bệnh nhân Digital Twin 360° & Khoảng trống chăm sóc</li>
+                                    <li>✓ Khám từ xa Telehealth Video Zoom Y Tế tích hợp đơn thuốc</li>
+                                    <li>✓ Checklist xuất viện thông minh & Theo dõi sau xuất viện 30 ngày</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Modal Footer -->
                 <div class="modal-footer bg-white px-4 py-3 d-flex justify-content-between">
                     <div class="small text-muted">
-                        <i class="bi bi-shield-check text-success me-1"></i> Tác giả: <strong>Nguyễn Văn Hưng</strong> - Đã kiểm thử tự động 230+ kịch bản đạt 100% tỷ lệ xanh toàn diện.
+                        <i class="bi bi-shield-check text-success me-1"></i> Tác giả: <strong>Nguyễn Văn Hưng</strong> - Đã kiểm thử tự động 265 kịch bản đạt 100% tỷ lệ xanh toàn diện (1,135 assertions).
                     </div>
                     <div class="d-flex gap-2">
-                        <a href="https://github.com/quy0358/He-Thong-Quan-Ly-Benh-Vien-Tam-Anh/pull/4" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                            <i class="bi bi-git me-1"></i> Xem Git PR #4
+                        <a href="https://github.com/quy0358/He-Thong-Quan-Ly-Benh-Vien-Tam-Anh/pull/6" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                            <i class="bi bi-git me-1"></i> Xem Git PR #6
                         </a>
                         <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
                     </div>
