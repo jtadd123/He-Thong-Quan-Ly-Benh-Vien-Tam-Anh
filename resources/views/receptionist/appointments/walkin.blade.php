@@ -301,22 +301,36 @@
 
 <!-- Modal: Quét / Trích xuất QR CCCD & BHYT -->
 <div class="modal fade" id="qrCccdModal" tabindex="-1" aria-labelledby="qrCccdModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title fw-bold fs-6" id="qrCccdModalLabel">
-                    <i class="bi bi-qr-code-scan me-1"></i> Bóc Tách Dữ Liệu QR CCCD / BHYT
+                    <i class="bi bi-qr-code-scan me-1"></i> Quét & Bóc Tách Dữ Liệu QR CCCD / BHYT Bằng Camera
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="stopWalkinCamera()"></button>
             </div>
             <div class="modal-body p-4">
-                <p class="small text-muted mb-3">
-                    Hỗ trợ quét trực tiếp bằng máy đọc mã vạch 2D hoặc dán chuỗi QR chuẩn Bộ Công An / Bảo hiểm xã hội Việt Nam.
-                </p>
+                <!-- Camera Scanner Container -->
+                <div class="p-3 bg-light rounded-3 border text-center mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small fw-bold text-dark">
+                            <i class="bi bi-camera-fill text-primary me-1"></i> Quét Bằng Webcam / Camera Trình Duyệt:
+                        </span>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-primary" id="btnToggleWalkinCam" onclick="toggleWalkinCamera()">
+                                <i class="bi bi-camera-video me-1"></i> Bật Camera Quét
+                            </button>
+                        </div>
+                    </div>
+                    <div id="walkinCameraReader" class="d-none mx-auto rounded overflow-hidden" style="max-width: 420px; background: #000;"></div>
+                    <div id="walkinCameraFeedback" class="small text-muted mt-2">
+                        Nhấn nút "Bật Camera Quét" để đưa thẻ Căn cước công dân hoặc thẻ BHYT trước camera.
+                    </div>
+                </div>
 
                 <div class="mb-3">
-                    <label class="form-label small fw-semibold">Chuỗi dữ liệu quét từ mã QR:</label>
-                    <textarea id="rawQrInput" class="form-control font-monospace small" rows="3" placeholder="Dán hoặc bắn mã QR vào đây..."></textarea>
+                    <label class="form-label small fw-semibold">Hoặc Dán / Bắn Mã QR Từ Máy Quét Cầm Tay:</label>
+                    <textarea id="rawQrInput" class="form-control font-monospace small" rows="2" placeholder="Dán hoặc bắn mã QR vào đây..."></textarea>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -331,7 +345,7 @@
                 <div id="qrAlertBox" class="alert alert-danger py-2 px-3 small d-none mt-3"></div>
             </div>
             <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" onclick="stopWalkinCamera()">Đóng</button>
                 <button type="button" class="btn btn-primary btn-sm fw-semibold" onclick="parseAndFillQrData()">
                     <i class="bi bi-arrow-down-square-fill me-1"></i> Trích xuất & Điền vào form
                 </button>
@@ -341,7 +355,66 @@
 </div>
 
 @push('scripts')
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
+    let walkinScanner = null;
+
+    function toggleWalkinCamera() {
+        if (walkinScanner) {
+            stopWalkinCamera();
+        } else {
+            startWalkinCamera();
+        }
+    }
+
+    function startWalkinCamera() {
+        const readerEl = document.getElementById('walkinCameraReader');
+        const feedbackEl = document.getElementById('walkinCameraFeedback');
+        const btn = document.getElementById('btnToggleWalkinCam');
+
+        readerEl.classList.remove('d-none');
+        feedbackEl.textContent = 'Đang kích hoạt camera...';
+        btn.innerHTML = '<i class="bi bi-camera-video-off me-1"></i> Tắt Camera';
+        btn.className = 'btn btn-sm btn-outline-danger';
+
+        walkinScanner = new Html5Qrcode("walkinCameraReader");
+        walkinScanner.start(
+            { facingMode: "environment" },
+            {
+                fps: 10,
+                qrbox: { width: 250, height: 250 }
+            },
+            (decodedText) => {
+                feedbackEl.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-check2-circle"></i> Đã quét thành công!</span>`;
+                document.getElementById('rawQrInput').value = decodedText;
+                stopWalkinCamera();
+                parseAndFillQrData(decodedText);
+            },
+            () => {}
+        ).catch(err => {
+            feedbackEl.textContent = 'Không thể mở camera: ' + err;
+            stopWalkinCamera();
+        });
+    }
+
+    function stopWalkinCamera() {
+        if (walkinScanner) {
+            walkinScanner.stop().then(() => {
+                walkinScanner.clear();
+                walkinScanner = null;
+            }).catch(() => {
+                walkinScanner = null;
+            });
+        }
+        const readerEl = document.getElementById('walkinCameraReader');
+        const btn = document.getElementById('btnToggleWalkinCam');
+        if (readerEl) readerEl.classList.add('d-none');
+        if (btn) {
+            btn.innerHTML = '<i class="bi bi-camera-video me-1"></i> Bật Camera Quét';
+            btn.className = 'btn btn-sm btn-primary';
+        }
+    }
+
     function fillSampleCccd() {
         document.getElementById('rawQrInput').value = '001092018888||Nguyễn Văn Hưng|15081992|Nam|108 Hoàng Như Tiếp, Bồ Đề, Long Biên, Hà Nội|10102021';
     }
@@ -350,14 +423,16 @@
         document.getElementById('rawQrInput').value = 'DN4010123456789|Nguyễn Bệnh Nhân BHYT|20/05/1990|1|108 Hoàng Như Tiếp, Long Biên, Hà Nội|01001|01/01/2026-31/12/2026';
     }
 
-    function parseAndFillQrData() {
-        const raw = document.getElementById('rawQrInput').value.trim();
+    function parseAndFillQrData(directText = null) {
+        const raw = (directText || document.getElementById('rawQrInput').value).trim();
         const alertBox = document.getElementById('qrAlertBox');
-        alertBox.classList.add('d-none');
+        if (alertBox) alertBox.classList.add('d-none');
 
         if (!raw) {
-            alertBox.textContent = 'Vui lòng nhập hoặc quét chuỗi QR trước khi trích xuất.';
-            alertBox.classList.remove('d-none');
+            if (alertBox) {
+                alertBox.textContent = 'Vui lòng nhập hoặc quét chuỗi QR trước khi trích xuất.';
+                alertBox.classList.remove('d-none');
+            }
             return;
         }
 
@@ -388,7 +463,10 @@
                 else if (genderStr.toLowerCase().includes('nữ')) genderSelect.value = 'female';
             }
 
-            bootstrap.Modal.getInstance(document.getElementById('qrCccdModal')).hide();
+            stopWalkinCamera();
+            const modalEl = document.getElementById('qrCccdModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
             alert('Đã trích xuất thành công thông tin công dân từ thẻ CCCD gắn chip!');
             return;
         }
@@ -415,15 +493,19 @@
                 genderSelect.value = (genderCode === '1') ? 'male' : 'female';
             }
 
-            bootstrap.Modal.getInstance(document.getElementById('qrCccdModal')).hide();
+            stopWalkinCamera();
+            const modalEl = document.getElementById('qrCccdModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
             alert('Đã trích xuất thành công thông tin thẻ Bảo hiểm Y tế (BHYT)!');
             return;
         }
 
-        alertBox.textContent = 'Định dạng mã QR không hợp lệ hoặc chưa được hỗ trợ. Vui lòng kiểm tra lại dữ liệu.';
-        alertBox.classList.remove('d-none');
+        if (alertBox) {
+            alertBox.textContent = 'Định dạng mã QR không hợp lệ hoặc chưa được hỗ trợ. Vui lòng kiểm tra lại dữ liệu.';
+            alertBox.classList.remove('d-none');
+        }
     }
-</script>
     document.addEventListener('DOMContentLoaded', function () {
         const typeNew = document.getElementById('patientTypeNew');
         const typeExisting = document.getElementById('patientTypeExisting');

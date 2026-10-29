@@ -27,7 +27,9 @@ class BookingTest extends TestCase
         $date = $targetDate->toDateString();
         $dayOfWeek = strtolower($targetDate->englishDayOfWeek);
 
-        // Ensure schedule exists for target morning
+        // Ensure schedule exists for target morning and reset slot
+        Appointment::where('doctor_id', $doctor->id)->where('appointment_date', $date)->where('shift', 'morning')->delete();
+
         DoctorSchedule::updateOrCreate([
             'doctor_id' => $doctor->id,
             'day_of_week' => $dayOfWeek,
@@ -218,7 +220,7 @@ class BookingTest extends TestCase
     public function test_cannot_book_duplicate_appointment_in_same_shift(): void
     {
         $doctor = Doctor::first();
-        $targetDate = Carbon::tomorrow()->addDays(8);
+        $targetDate = Carbon::tomorrow()->addDays(120);
         $dayOfWeek = strtolower($targetDate->englishDayOfWeek);
 
         DoctorSchedule::updateOrCreate([

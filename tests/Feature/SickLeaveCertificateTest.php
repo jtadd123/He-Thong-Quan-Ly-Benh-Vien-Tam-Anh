@@ -44,13 +44,13 @@ class SickLeaveCertificateTest extends TestCase
         $this->patientProfile = PatientProfile::first() ?? PatientProfile::factory()->create();
 
         $this->appointment = Appointment::create([
-            'appointment_code' => 'AP-TEST-CERT-' . rand(1000, 9999),
+            'appointment_code' => 'AP-TEST-CERT-' . uniqid() . '-' . rand(100, 999),
             'patient_profile_id' => $this->patientProfile->id,
             'doctor_id' => $this->doctor->id,
             'specialty_id' => $this->specialty->id,
             'appointment_date' => Carbon::today(),
             'shift' => 'morning',
-            'queue_number' => 77,
+            'queue_number' => rand(100, 999),
             'status' => Appointment::STATUS_COMPLETED,
             'symptom_description' => 'Test xin giấy nghỉ ốm',
         ]);

@@ -113,4 +113,40 @@ class PatientSafetyClinicalTest extends TestCase
         $response->assertSee('B+');
         $response->assertSee('DỊ ỨNG: Dị ứng Paracetamol');
     }
+
+    public function test_patient_vital_rejects_systolic_less_than_or_equal_diastolic(): void
+    {
+        $patient = PatientProfile::first();
+
+        // Thử nhập huyết áp tâm thu nhỏ hơn tâm trương (70/120 mmHg - vô lý thực tế y khoa)
+        $response = $this->actingAs($this->receptionistUser)->post(
+            route('reception.patients.vitals.store', $patient),
+            [
+                'systolic_bp' => 70,
+                'diastolic_bp' => 120,
+                'heart_rate' => 80,
+            ]
+        );
+
+        $response->assertSessionHas('error');
+        $this->assertStringContainsString('Huyết áp tâm thu (70 mmHg) phải lớn hơn huyết áp tâm trương (120 mmHg)', session('error'));
+    }
+
+    public function test_code_generation_is_strictly_unique(): void
+    {
+        $code1 = PatientProfile::generatePatientCode();
+        $this->assertMatchesRegularExpression('/^BN-\d{8}-\d{4}$/', $code1);
+
+        $p1 = PatientProfile::create([
+            'patient_code' => $code1,
+            'full_name' => 'Bệnh Nhân Kiểm Thử Mã 1',
+            'dob' => '1990-01-01',
+            'gender' => 'male',
+            'phone' => '0912' . rand(100000, 999999),
+        ]);
+
+        $code2 = PatientProfile::generatePatientCode();
+        $this->assertNotEquals($code1, $code2);
+        $this->assertMatchesRegularExpression('/^BN-\d{8}-\d{4}$/', $code2);
+    }
 }

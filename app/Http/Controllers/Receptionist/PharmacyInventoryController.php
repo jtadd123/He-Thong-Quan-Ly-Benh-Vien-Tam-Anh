@@ -38,10 +38,21 @@ class PharmacyInventoryController extends Controller
         } elseif ($status === 'expiring_soon') {
             $query->whereNotNull('expiry_date')
                 ->where('expiry_date', '>=', Carbon::today())
-                ->where('expiry_date', '<=', Carbon::today()->addMonths(3));
+                ->where('expiry_date', '<=', Carbon::today()->addMonths(3))
+                ->orderBy('expiry_date', 'asc');
+        } elseif ($status === 'expired') {
+            $query->whereNotNull('expiry_date')
+                ->where('expiry_date', '<', Carbon::today())
+                ->orderBy('expiry_date', 'asc');
+        } elseif ($status === 'fefo') {
+            $query->fefoOrder();
         }
 
-        $medications = $query->orderBy('name')->paginate(15)->withQueryString();
+        if ($status !== 'expiring_soon' && $status !== 'expired' && $status !== 'fefo') {
+            $query->orderBy('name');
+        }
+
+        $medications = $query->paginate(15)->withQueryString();
 
         // Statistical KPI Counters
         $totalCount = Medication::count();
@@ -50,6 +61,9 @@ class PharmacyInventoryController extends Controller
         $expiringSoonCount = Medication::whereNotNull('expiry_date')
             ->where('expiry_date', '>=', Carbon::today())
             ->where('expiry_date', '<=', Carbon::today()->addMonths(3))
+            ->count();
+        $expiredCount = Medication::whereNotNull('expiry_date')
+            ->where('expiry_date', '<', Carbon::today())
             ->count();
         $totalInventoryValue = (float) Medication::sum(DB::raw('stock_quantity * unit_price'));
 
@@ -61,6 +75,7 @@ class PharmacyInventoryController extends Controller
             'lowStockCount',
             'outOfStockCount',
             'expiringSoonCount',
+            'expiredCount',
             'totalInventoryValue'
         ));
     }

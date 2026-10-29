@@ -43,7 +43,7 @@ class PharmacyDispensingTest extends TestCase
         $this->patientProfile = PatientProfile::first() ?? PatientProfile::factory()->create();
 
         $this->appointment = Appointment::create([
-            'appointment_code' => 'AP-TEST-RX-' . rand(1000, 9999),
+            'appointment_code' => 'AP-TEST-RX-' . uniqid(),
             'patient_profile_id' => $this->patientProfile->id,
             'doctor_id' => $this->doctor->id,
             'specialty_id' => $this->specialty->id,

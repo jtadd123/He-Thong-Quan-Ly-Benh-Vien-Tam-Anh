@@ -61,18 +61,22 @@ class SickLeaveCertificate extends Model
         $today = Carbon::now()->format('Ymd');
         $prefix = "GCN-{$today}-";
 
-        $latest = self::where('certificate_code', 'LIKE', "{$prefix}%")
+        $latest = self::where('certificate_code', 'LIKE', "{$prefix}____")
             ->orderBy('certificate_code', 'desc')
             ->first();
 
-        if ($latest) {
-            $lastNumber = (int) substr($latest->certificate_code, -4);
-            $nextNumber = str_pad((string)($lastNumber + 1), 4, '0', STR_PAD_LEFT);
+        if ($latest && preg_match('/-(\d{4})$/', $latest->certificate_code, $matches)) {
+            $nextNumber = (int) $matches[1] + 1;
         } else {
-            $nextNumber = '0001';
+            $nextNumber = 1;
         }
 
-        return "{$prefix}{$nextNumber}";
+        do {
+            $candidate = sprintf('%s%04d', $prefix, $nextNumber);
+            $nextNumber++;
+        } while (self::where('certificate_code', $candidate)->exists());
+
+        return $candidate;
     }
 
     public function getLeaveDaysTextAttribute(): string

@@ -33,12 +33,23 @@ class Appointment extends Model
         'status',
         'cancellation_reason',
         'created_by_user_id',
+        'esi_level',
+        'esi_criteria',
+        'triage_notes',
+        'triaged_by_user_id',
+        'triaged_at',
+        'called_at',
+        'counter_number',
     ];
 
     protected function casts(): array
     {
         return [
             'appointment_date' => 'date',
+            'esi_level' => 'integer',
+            'esi_criteria' => 'array',
+            'triaged_at' => 'datetime',
+            'called_at' => 'datetime',
         ];
     }
 
@@ -62,9 +73,69 @@ class Appointment extends Model
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
+    public function triagedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'triaged_by_user_id');
+    }
+
+    public function invoices(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PatientInvoice::class);
+    }
+
+    public function getEsiInfoAttribute(): array
+    {
+        return \App\Services\EmergencyTriageService::ESI_LEVELS[$this->esi_level ?? 5] ?? \App\Services\EmergencyTriageService::ESI_LEVELS[5];
+    }
+
+    public function getEsiBadgeAttribute(): string
+    {
+        return \App\Services\EmergencyTriageService::renderBadge($this->esi_level ?? 5);
+    }
+
+    public function scopePriorityEsiOrder(Builder $query): Builder
+    {
+        return $query->orderBy('esi_level', 'asc')->orderBy('created_at', 'asc');
+    }
+
     public function medicalRecord(): HasOne
     {
         return $this->hasOne(MedicalRecord::class, 'appointment_id');
+    }
+
+    public function vitals(): HasMany
+    {
+        return $this->hasMany(PatientVital::class, 'appointment_id');
+    }
+
+    public function notifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PatientNotification::class);
+    }
+
+    public function dayBedAdmissions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(DayBedAdmission::class);
+    }
+
+    public function clinicalConsultations(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ClinicalConsultation::class);
+    }
+
+    public function vaccinationRecords(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(VaccinationRecord::class);
+    }
+
+    public function surveys(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PatientSurvey::class);
+    }
+
+    public function latestVital(): HasOne
+    {
+        return $this->hasOne(PatientVital::class, 'appointment_id')->latestOfMany('recorded_at');
     }
 
     public function scopeToday(Builder $query): Builder

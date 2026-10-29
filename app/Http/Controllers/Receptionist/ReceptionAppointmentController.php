@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Receptionist;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\ClinicalAuditLog;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\PatientProfile;
 use App\Models\Specialty;
+use App\Services\HealthInsuranceService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,7 +30,7 @@ class ReceptionAppointmentController extends Controller
         $specialtyId = $request->query('specialty_id');
         $search = $request->query('search');
 
-        $query = Appointment::with(['patientProfile', 'doctor.user', 'specialty'])
+        $query = Appointment::with(['patientProfile.latestVital', 'doctor.user', 'specialty'])
             ->whereDate('appointment_date', $date)
             ->latest('created_at');
 
@@ -236,7 +238,11 @@ class ReceptionAppointmentController extends Controller
                 $symptom = '[ƯU TIÊN] ' . $symptom;
             }
 
-            return Appointment::create([
+            // Tự động phân loại cấp cứu chuẩn ESI
+            $latestVital = $patientProfile->latestVital;
+            $esiResult = \App\Services\EmergencyTriageService::classify($patientProfile, $symptom, $latestVital);
+
+            $newAppointment = Appointment::create([
                 'appointment_code' => Appointment::generateAppointmentCode(),
                 'patient_profile_id' => $patientProfile->id,
                 'doctor_id' => $validated['doctor_id'],
@@ -247,7 +253,20 @@ class ReceptionAppointmentController extends Controller
                 'symptom_description' => $symptom,
                 'status' => Appointment::STATUS_CONFIRMED, // Walk-in is auto check-in
                 'created_by_user_id' => Auth::id(),
+                'esi_level' => $esiResult['level'],
+                'esi_criteria' => $esiResult['criteria'],
+                'triage_notes' => $esiResult['action_protocol'],
+                'triaged_by_user_id' => Auth::id(),
+                'triaged_at' => now(),
             ]);
+
+            ClinicalAuditLog::record(
+                $patientProfile,
+                'checkin',
+                "Tiếp nhận vãng lai tại quầy (Mã hẹn: {$newAppointment->appointment_code}) vào BS {$newAppointment->doctor->full_name_with_title}"
+            );
+
+            return $newAppointment;
         });
 
         return redirect()
@@ -267,6 +286,12 @@ class ReceptionAppointmentController extends Controller
         $appointment->update([
             'status' => Appointment::STATUS_CONFIRMED,
         ]);
+
+        ClinicalAuditLog::record(
+            $appointment->patient_profile_id,
+            'checkin',
+            "Check-in tiếp nhận lịch hẹn {$appointment->appointment_code} vào hàng đợi Bác sĩ {$appointment->doctor->full_name_with_title}"
+        );
 
         return back()->with('success', "Đã Check-in thành công cho bệnh nhân {$appointment->patientProfile->full_name} (Mã hẹn: {$appointment->appointment_code}). Bệnh nhân đã được chuyển vào danh sách chờ khám của bác sĩ.");
     }
@@ -445,17 +470,31 @@ class ReceptionAppointmentController extends Controller
     }
 
     /**
-     * Print patient fee receipt / invoice with VietQR payment.
+     * Print patient fee receipt / invoice with Health Insurance (BHYT) co-payment and VietQR payment.
      */
     public function printReceipt(Appointment $appointment): View
     {
         $appointment->load(['patientProfile', 'doctor.user', 'specialty']);
-        $fee = (float) ($appointment->doctor ? $appointment->doctor->consultation_fee : 350000);
+        $totalFee = (float) ($appointment->doctor ? $appointment->doctor->consultation_fee : 350000);
 
-        $feeWords = $this->convertNumberToVietnameseWords((int) $fee) . ' đồng chẵn';
-        $vietQrUrl = "https://img.vietqr.io/image/vietinbank-113366668888-compact2.png?amount={$fee}&addInfo=TAMANH%20" . urlencode($appointment->appointment_code) . "&accountName=BV%20DA%20KHOA%20TAM%20ANH";
+        $insuranceCode = $appointment->patientProfile->insurance_code ?? null;
+        $routeParam = request()->query('route', 'correct'); // 'correct', 'incorrect', 'none'
+        $useInsurance = $routeParam !== 'none' && !empty($insuranceCode);
+        $isCorrectRoute = $routeParam === 'correct';
 
-        return view('receptionist.appointments.receipt', compact('appointment', 'fee', 'feeWords', 'vietQrUrl'));
+        $insuranceData = null;
+        if ($useInsurance && $insuranceCode) {
+            $insuranceData = HealthInsuranceService::calculate($insuranceCode, $totalFee, $isCorrectRoute);
+            $payableAmount = $insuranceData['patient_copay_amount'];
+        } else {
+            $payableAmount = $totalFee;
+        }
+
+        $fee = $totalFee;
+        $feeWords = $this->convertNumberToVietnameseWords((int) $payableAmount) . ' đồng chẵn';
+        $vietQrUrl = "https://img.vietqr.io/image/vietinbank-113366668888-compact2.png?amount={$payableAmount}&addInfo=TAMANH%20" . urlencode($appointment->appointment_code) . "&accountName=BV%20DA%20KHOA%20TAM%20ANH";
+
+        return view('receptionist.appointments.receipt', compact('appointment', 'fee', 'payableAmount', 'feeWords', 'vietQrUrl', 'insuranceData', 'routeParam'));
     }
 
     private function convertNumberToVietnameseWords(int $number): string
@@ -486,5 +525,30 @@ class ReceptionAppointmentController extends Controller
         }
 
         return number_format($number, 0, ',', '.') . ' VNĐ';
+    }
+
+    /**
+     * Phát lệnh gọi loa âm thanh AI & chuông Ding-Dong đến sảnh tiếp nhận.
+     */
+    public function callAudio(Appointment $appointment, Request $request)
+    {
+        $counter = $request->input('counter_number', 'Quầy 01');
+        $appointment->update([
+            'called_at' => now(),
+            'counter_number' => $counter,
+        ]);
+
+        $patientName = $appointment->patientProfile->full_name;
+        $stt = $appointment->queue_number;
+        $speechText = "Kính mời bệnh nhân {$patientName}, số thứ tự " . sprintf('%02d', $stt) . ", vui lòng đến {$counter}!";
+
+        return response()->json([
+            'success' => true,
+            'patient_name' => $patientName,
+            'stt' => $stt,
+            'counter' => $counter,
+            'speech_text' => $speechText,
+            'called_at' => $appointment->called_at->format('H:i:s'),
+        ]);
     }
 }

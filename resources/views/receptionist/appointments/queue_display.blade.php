@@ -75,6 +75,19 @@
             font-size: 1.6rem;
             font-weight: 700;
         }
+
+        @keyframes pulseBorder {
+            0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.8); border-color: #06b6d4; }
+            70% { box-shadow: 0 0 0 16px rgba(6, 182, 212, 0); border-color: #38bdf8; }
+            100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); border-color: #06b6d4; }
+        }
+
+        .queue-card.pulse-active {
+            animation: pulseBorder 1.4s infinite;
+            background-color: #1e3a8a !important;
+            border-color: #38bdf8 !important;
+            transform: scale(1.02);
+        }
     </style>
 </head>
 <body>
@@ -108,6 +121,20 @@
         </div>
     </header>
 
+    <!-- Real-time Broadcast Calling Banner -->
+    <div id="liveCallingBanner" class="alert border-0 shadow-lg p-3 mx-4 mt-3 align-items-center justify-content-between" style="display: none; background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%); color: #000; border-radius: 12px;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-dark text-warning p-2 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                <i class="bi bi-megaphone-fill fs-3"></i>
+            </div>
+            <div>
+                <div class="fw-bold small text-uppercase text-dark opacity-75">Hệ thống loa tự động đang gọi người bệnh:</div>
+                <h3 class="fw-black mb-0 font-monospace text-dark" id="callingPatientText">---</h3>
+            </div>
+        </div>
+        <div class="badge bg-dark text-warning fs-5 px-3 py-2 font-monospace" id="callingRoomBadge">PHÒNG KHÁM</div>
+    </div>
+
     <!-- Main Live Queue Container -->
     <main class="container-fluid px-4 py-4">
         <div class="row g-4">
@@ -126,7 +153,7 @@
                 <div class="row g-3">
                     @forelse($waitingAppointments as $app)
                         <div class="col-md-6">
-                            <div class="queue-card h-100 {{ $app->is_priority ? 'border-danger' : '' }}">
+                            <div class="queue-card h-100 {{ $app->is_priority ? 'border-danger' : '' }}" id="card-stt-{{ $app->queue_number }}">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <div class="d-flex align-items-center gap-2">
                                         @if($app->is_priority)
@@ -316,6 +343,45 @@
             }
         }
 
+        function highlightCalledCard(stt, name, room) {
+            // Remove pulse from any existing cards
+            document.querySelectorAll('.queue-card.pulse-active').forEach(c => c.classList.remove('pulse-active'));
+
+            const card = document.getElementById(`card-stt-${stt}`);
+            if (card) {
+                card.classList.add('pulse-active');
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            // Top banner
+            const banner = document.getElementById('liveCallingBanner');
+            const bannerText = document.getElementById('callingPatientText');
+            const bannerRoom = document.getElementById('callingRoomBadge');
+            if (banner && bannerText && bannerRoom) {
+                bannerText.innerText = `BỆNH NHÂN: ${name.toUpperCase()} (STT #${String(stt).padStart(2, '0')})`;
+                bannerRoom.innerText = `PHÒNG ${room.toUpperCase()}`;
+                banner.style.display = 'flex';
+
+                setTimeout(() => {
+                    banner.style.display = 'none';
+                    if (card) card.classList.remove('pulse-active');
+                }, 15000);
+            }
+        }
+
+        // Listen for Real-time Calling signals from Receptionist or Doctor desk
+        window.addEventListener('storage', function (e) {
+            if (e.key === 'tam_anh_queue_call' && e.newValue) {
+                try {
+                    const data = JSON.parse(e.newValue);
+                    if (data && data.name) {
+                        announceQueue(data.name, data.stt, data.room);
+                        highlightCalledCard(data.stt, data.name, data.room);
+                    }
+                } catch (err) {}
+            }
+        });
+
         // Live waiting list for "Gọi Số Tiếp Theo" button
         const waitingPatients = @json($waitingAppointments->values()->map(fn($a) => [
             'name' => $a->patientProfile->full_name,
@@ -331,6 +397,7 @@
             }
             const first = waitingPatients[0];
             announceQueue(first.name, first.stt, first.room);
+            highlightCalledCard(first.stt, first.name, first.room);
         }
     </script>
 </body>

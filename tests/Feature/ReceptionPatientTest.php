@@ -267,7 +267,7 @@ class ReceptionPatientTest extends TestCase
         $specialty = Specialty::where('is_active', true)->first();
         $doctor = Doctor::where('specialty_id', $specialty->id)->first();
         $uniquePhone = '097' . rand(1000000, 9999999);
-        $testDate = Carbon::tomorrow()->addDays(25)->toDateString();
+        $testDate = Carbon::tomorrow()->addDays(rand(400, 600))->toDateString();
 
         $response = $this->actingAs($receptionist)->post('/reception/appointments/walk-in', [
             'is_existing_patient' => 0,
@@ -345,7 +345,7 @@ class ReceptionPatientTest extends TestCase
         $doctor = Doctor::where('is_available', true)->first();
         $specialty = $doctor->specialty;
         $uniquePhone = '096' . rand(1000000, 9999999);
-        $testDate = Carbon::tomorrow()->addDays(6)->toDateString();
+        $testDate = Carbon::tomorrow()->addDays(rand(700, 900))->toDateString();
 
         $response = $this->actingAs($receptionist)->post('/reception/appointments/walk-in', [
             'is_existing_patient' => '0',

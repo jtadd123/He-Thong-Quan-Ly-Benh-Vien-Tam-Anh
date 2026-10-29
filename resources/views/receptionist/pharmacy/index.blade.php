@@ -179,6 +179,29 @@
                                     <div class="text-truncate text-dark fw-medium" style="max-width: 260px; font-size: 0.76rem;">
                                         {{ $record->prescriptions->pluck('medication_name')->implode(', ') }}
                                     </div>
+                                    @php
+                                        $medNames = $record->prescriptions->pluck('medication_name')->toArray();
+                                        $ddiAlerts = \App\Services\DrugInteractionService::analyze($medNames);
+                                    @endphp
+                                    @if(!empty($ddiAlerts))
+                                        <div class="mt-1">
+                                            <span class="badge bg-danger text-white border small" title="{{ $ddiAlerts[0]['title'] }}">
+                                                <i class="bi bi-exclamation-triangle-fill me-1"></i>Cảnh báo DDI ({{ count($ddiAlerts) }})
+                                            </span>
+                                        </div>
+                                    @endif
+
+                                    @php
+                                        $medList = $record->prescriptions->map(fn($p) => ['name' => $p->medication_name, 'active_ingredient' => $p->medication_name])->toArray();
+                                        $allergyResult = \App\Services\AllergyCrossReactionService::checkAllergies($record->patientProfile->allergies, $medList);
+                                    @endphp
+                                    @if($allergyResult['has_critical_allergy'])
+                                        <div class="mt-1">
+                                            <span class="badge bg-danger text-white border border-danger small animate-pulse" title="{{ $allergyResult['alerts'][0]['explanation'] }}">
+                                                <i class="bi bi-shield-slash-fill me-1"></i>NGUY CƠ DỊ ỨNG ({{ $allergyResult['alerts_count'] }})
+                                            </span>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
 
@@ -221,9 +244,25 @@
                                     @endif
 
                                     <!-- Print Drug Bag Label -->
-                                    <a href="{{ route('reception.pharmacy.label', $record) }}" target="_blank" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 shadow-sm" title="In nhãn hướng dẫn túi thuốc dán bao bì">
-                                        <i class="bi bi-tag-fill"></i> In nhãn túi
+                                    <a href="{{ route('reception.pharmacy.label', $record) }}" target="_blank" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1 shadow-sm" title="In nhãn hướng dẫn túi thuốc dán bao bì">
+                                        <i class="bi bi-bag"></i> Nhãn túi
                                     </a>
+
+                                    <!-- Print Smart Bottle Stickers -->
+                                    <a href="{{ route('reception.pharmacy.bottle-labels', $record) }}" target="_blank" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 shadow-sm" title="In tem dán hộp/lọ thuốc thông minh (Decal 75x50mm)">
+                                        <i class="bi bi-tag-fill"></i> Tem lọ thuốc
+                                    </a>
+
+                                    <!-- Visual Schedule & iCal -->
+                                    <a href="{{ route('reception.pharmacy.schedule', $record) }}" class="btn btn-sm btn-outline-info d-inline-flex align-items-center gap-1 shadow-sm" title="Thời gian biểu dùng thuốc & Đồng bộ Lịch điện thoại (.ics)">
+                                        <i class="bi bi-calendar2-check"></i> Lịch uống
+                                    </a>
+
+                                    <!-- Pharmacy Voice Audio Caller -->
+                                    <button type="button" class="btn btn-sm btn-outline-warning d-inline-flex align-items-center gap-1 shadow-sm" title="Phát loa gọi bệnh nhân đến Quầy Dược nhận thuốc"
+                                        onclick="callPharmacyPatientVoice('{{ addslashes($record->patientProfile->full_name) }}', '{{ $record->record_code }}')">
+                                        <i class="bi bi-megaphone-fill text-warning"></i> Gọi loa
+                                    </button>
 
                                     <!-- Print MOH Prescription -->
                                     <a href="{{ route('doctor.records.print', $record) }}" target="_blank" class="btn btn-sm btn-outline-dark" title="In toa thuốc chuẩn Bộ Y Tế">
@@ -392,6 +431,81 @@
 
         const modal = new bootstrap.Modal(document.getElementById('dispenseConfirmModal'));
         modal.show();
+    }
+
+    // Hospital Chime + Speech Synthesis for Pharmacy Voice Caller
+    function playHospitalDingDong() {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+
+            // Tone 1: 523.25 Hz (C5)
+            const osc1 = ctx.createOscillator();
+            const gain1 = ctx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(523.25, ctx.currentTime);
+            gain1.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            osc1.start(ctx.currentTime);
+            osc1.stop(ctx.currentTime + 0.45);
+
+            // Tone 2: 659.25 Hz (E5)
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(659.25, ctx.currentTime + 0.22);
+            gain2.gain.setValueAtTime(0.35, ctx.currentTime + 0.22);
+            gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.85);
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.start(ctx.currentTime + 0.22);
+            osc2.stop(ctx.currentTime + 0.85);
+        } catch (e) {
+            console.warn('Audio chime unavailable', e);
+        }
+    }
+
+    function callPharmacyPatientVoice(patientName, recordCode) {
+        playHospitalDingDong();
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+
+            setTimeout(() => {
+                const speechText = `Kính mời bệnh nhân ${patientName}, mã đơn ${recordCode}, vui lòng đến Quầy Dược số 01 nhận thuốc và tư vấn sử dụng!`;
+                const utterance = new SpeechSynthesisUtterance(speechText);
+                utterance.lang = 'vi-VN';
+                utterance.rate = 0.92;
+                utterance.pitch = 1.05;
+
+                const voices = window.speechSynthesis.getVoices();
+                const viVoice = voices.find(v => v.lang.includes('vi') || v.lang.includes('VN'));
+                if (viVoice) utterance.voice = viVoice;
+
+                window.speechSynthesis.speak(utterance);
+            }, 450);
+        }
+
+        // Show floating toast
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed bottom-0 end-0 p-3';
+        toast.style.zIndex = '9999';
+        toast.innerHTML = `
+            <div class="toast show align-items-center text-bg-warning border-0 shadow-lg" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body text-dark">
+                        <i class="bi bi-megaphone-fill me-2 fs-5"></i>
+                        <strong>Đang phát loa quầy Dược:</strong> Mời <b>${patientName}</b> (Toa ${recordCode}) &rarr; <b>Quầy Dược số 01</b>
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" onclick="this.closest('.position-fixed').remove()"></button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
     }
 </script>
 @endpush

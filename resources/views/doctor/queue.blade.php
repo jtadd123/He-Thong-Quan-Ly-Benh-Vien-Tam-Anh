@@ -74,9 +74,15 @@
                                 </td>
                                 <td class="text-end pe-3">
                                     @if($app->status === 'confirmed')
-                                        <a href="{{ route('doctor.examine', $app) }}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 shadow-sm">
-                                            <i class="bi bi-stethoscope"></i> Vào khám bệnh
-                                        </a>
+                                        <div class="d-inline-flex align-items-center gap-1">
+                                            <button type="button" class="btn btn-sm btn-outline-warning text-dark" title="Phát loa gọi bệnh nhân vào phòng khám"
+                                                onclick="callPatientVoice('{{ addslashes($app->patientProfile->full_name) }}', '{{ $app->queue_number }}', '{{ addslashes($doctor->room_number ?? '1') }}', '{{ addslashes($doctor->full_name_with_title) }}')">
+                                                <i class="bi bi-megaphone-fill text-danger"></i> Gọi loa
+                                            </button>
+                                            <a href="{{ route('doctor.examine', $app) }}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 shadow-sm">
+                                                <i class="bi bi-stethoscope"></i> Vào khám
+                                            </a>
+                                        </div>
                                     @elseif($app->status === 'completed')
                                         <div class="btn-group btn-group-sm">
                                             @if($app->medicalRecord)
@@ -110,3 +116,85 @@
     </div>
 @endif
 @endsection
+
+@push('scripts')
+<script>
+    function playHospitalChime() {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+
+            const osc1 = ctx.createOscillator();
+            const gain1 = ctx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(587.33, ctx.currentTime);
+            gain1.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            osc1.start(ctx.currentTime);
+            osc1.stop(ctx.currentTime + 0.5);
+
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.22);
+            gain2.gain.setValueAtTime(0.35, ctx.currentTime + 0.22);
+            gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.85);
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.start(ctx.currentTime + 0.22);
+            osc2.stop(ctx.currentTime + 0.85);
+        } catch (e) {}
+    }
+
+    function callPatientVoice(patientName, queueNumber, roomNumber, doctorName) {
+        try {
+            localStorage.setItem('tam_anh_queue_call', JSON.stringify({
+                name: patientName,
+                stt: queueNumber,
+                room: roomNumber,
+                doctor: doctorName,
+                time: Date.now()
+            }));
+        } catch (e) {}
+
+        playHospitalChime();
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            setTimeout(() => {
+                const speechText = `Kính mời bệnh nhân ${patientName}, số thứ tự ${queueNumber}, vào phòng khám ${roomNumber} gặp ${doctorName || 'bác sĩ'}.`;
+                const utterance = new SpeechSynthesisUtterance(speechText);
+                utterance.lang = 'vi-VN';
+                utterance.rate = 0.92;
+                utterance.pitch = 1.05;
+
+                const voices = window.speechSynthesis.getVoices();
+                const viVoice = voices.find(v => v.lang.includes('vi') || v.lang.includes('VN'));
+                if (viVoice) utterance.voice = viVoice;
+
+                window.speechSynthesis.speak(utterance);
+            }, 450);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed bottom-0 end-0 p-3';
+        toast.style.zIndex = '9999';
+        toast.innerHTML = `
+            <div class="toast show align-items-center text-bg-primary border-0 shadow-lg" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-megaphone-fill me-2 fs-5"></i>
+                        <strong>Đang phát loa:</strong> Mời STT <b>#${queueNumber}</b> (${patientName}) &rarr; Phòng <b>${roomNumber}</b>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="this.closest('.position-fixed').remove()"></button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+</script>
+@endpush

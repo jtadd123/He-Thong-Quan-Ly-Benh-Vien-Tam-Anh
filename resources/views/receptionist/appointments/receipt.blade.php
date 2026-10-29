@@ -70,12 +70,34 @@
 
     <!-- Print Action Bar -->
     <div class="no-print bg-white border-bottom py-2 px-3 sticky-top shadow-sm text-center">
-        <div class="container d-flex justify-content-between align-items-center" style="max-width: 680px;">
+        <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2" style="max-width: 760px;">
             <a href="{{ route('reception.appointments.index') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left"></i> Quay lại quầy lễ tân
             </a>
+
+            <!-- BHYT Route Toggle Options -->
+            @if(!empty($appointment->patientProfile->insurance_code))
+                <div class="btn-group btn-group-sm" role="group">
+                    <a href="{{ route('reception.appointments.receipt', [$appointment, 'route' => 'correct']) }}"
+                       class="btn {{ ($routeParam ?? 'correct') === 'correct' ? 'btn-success fw-bold' : 'btn-outline-success' }}"
+                       title="Áp dụng chi trả BHYT đúng tuyến / thông tuyến">
+                        <i class="bi bi-check-circle me-1"></i> BHYT Đúng Tuyến
+                    </a>
+                    <a href="{{ route('reception.appointments.receipt', [$appointment, 'route' => 'incorrect']) }}"
+                       class="btn {{ ($routeParam ?? '') === 'incorrect' ? 'btn-warning fw-bold' : 'btn-outline-warning' }}"
+                       title="BHYT khám trái tuyến ngoại trú">
+                        <i class="bi bi-exclamation-triangle me-1"></i> Trái Tuyến
+                    </a>
+                    <a href="{{ route('reception.appointments.receipt', [$appointment, 'route' => 'none']) }}"
+                       class="btn {{ ($routeParam ?? '') === 'none' ? 'btn-secondary fw-bold' : 'btn-outline-secondary' }}"
+                       title="Không áp dụng BHYT cho ca khám này">
+                        Tự Nguyện 100%
+                    </a>
+                </div>
+            @endif
+
             <div class="d-flex gap-2">
-                <button onclick="window.print()" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 shadow-sm">
+                <button onclick="window.print()" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 shadow-sm fw-bold">
                     <i class="bi bi-printer-fill"></i> In Phiếu Thu (Ctrl + P)
                 </button>
             </div>
@@ -128,6 +150,22 @@
             <div class="col-6 text-end">
                 Bác sĩ phụ trách: <strong>{{ $appointment->doctor ? $appointment->doctor->full_name_with_title : '--' }}</strong> ({{ $appointment->doctor ? $appointment->doctor->room_number : '' }})
             </div>
+            @if(isset($insuranceData) && $insuranceData['is_valid'])
+                <div class="col-12 mt-2 pt-2 border-top">
+                    <div class="p-2 bg-light rounded d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-primary me-1"><i class="bi bi-card-heading"></i> BHYT</span>
+                            Mã thẻ: <strong class="font-monospace text-primary">{{ $insuranceData['code'] }}</strong>
+                            &bull; <span class="text-muted">{{ $insuranceData['object_name'] }}</span>
+                        </div>
+                        <div>
+                            <span class="badge {{ $insuranceData['is_correct_route'] ? 'bg-success' : 'bg-warning text-dark' }}">
+                                {{ $insuranceData['route_text'] }} (Mức hưởng: {{ $insuranceData['benefit_rate_pct'] }}%)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <!-- Fee Items Table -->
@@ -155,10 +193,27 @@
                     </tr>
                 </tbody>
                 <tfoot>
-                    <tr>
-                        <td colspan="4" class="text-end fw-bold">Tổng cộng tiền viện phí thu:</td>
-                        <td class="text-end fw-bold font-monospace fs-6 text-danger">{{ number_format($fee, 0, ',', '.') }} đ</td>
-                    </tr>
+                    @if(isset($insuranceData) && $insuranceData['is_valid'] && $insuranceData['benefit_rate_pct'] > 0)
+                        <tr>
+                            <td colspan="4" class="text-end text-muted">Tổng chi phí dịch vụ khám:</td>
+                            <td class="text-end font-monospace text-muted">{{ number_format($fee, 0, ',', '.') }} đ</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end text-success fw-semibold">
+                                <i class="bi bi-shield-check"></i> Quỹ BHYT chi trả ({{ $insuranceData['benefit_rate_pct'] }}%):
+                            </td>
+                            <td class="text-end font-monospace text-success fw-bold">-{{ $insuranceData['formatted_insurance_paid'] }}</td>
+                        </tr>
+                        <tr class="table-warning">
+                            <td colspan="4" class="text-end fw-bold fs-6 text-danger">Người bệnh cùng chi trả thực tế:</td>
+                            <td class="text-end fw-bold font-monospace fs-6 text-danger">{{ $insuranceData['formatted_patient_copay'] }}</td>
+                        </tr>
+                    @else
+                        <tr>
+                            <td colspan="4" class="text-end fw-bold">Tổng cộng tiền viện phí thu:</td>
+                            <td class="text-end fw-bold font-monospace fs-6 text-danger">{{ number_format($payableAmount ?? $fee, 0, ',', '.') }} đ</td>
+                        </tr>
+                    @endif
                 </tfoot>
             </table>
         </div>

@@ -5,6 +5,9 @@
 @section('content')
 <x-page-header title="{{ $patient->full_name }}" subtitle="Mã hồ sơ: {{ $patient->patient_code }} | Quản lý thông tin định danh và lịch sử khám chữa bệnh">
     <x-slot:actions>
+        <a href="{{ route('reception.patients.print-wristband', $patient) }}" target="_blank" class="btn btn-outline-danger d-inline-flex align-items-center gap-1" title="In vòng tay y tế đeo tay nhận diện người bệnh (Chuẩn JCI)">
+            <i class="bi bi-tag"></i> In vòng tay JCI
+        </a>
         <a href="{{ route('reception.patients.print-card', $patient) }}" target="_blank" class="btn btn-outline-info d-inline-flex align-items-center gap-1">
             <i class="bi bi-credit-card-2-front"></i> In thẻ bệnh nhân
         </a>
@@ -131,6 +134,16 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link px-4" id="vitals-tab" data-bs-toggle="pill" data-bs-target="#vitals" type="button" role="tab">
                     <i class="bi bi-activity text-danger me-1"></i> Diễn Tiến Sinh Hiệu ({{ $patient->vitals->count() }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link px-4" id="audit-tab" data-bs-toggle="pill" data-bs-target="#audit" type="button" role="tab">
+                    <i class="bi bi-shield-check text-info me-1"></i> Nhật Ký Truy Vết ({{ $patient->auditLogs->count() }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link px-4" id="consents-tab" data-bs-toggle="pill" data-bs-target="#consents" type="button" role="tab">
+                    <i class="bi bi-file-earmark-check text-success me-1"></i> Cam Đoan Thủ Thuật ({{ $patient->informedConsents->count() }})
                 </button>
             </li>
         </ul>
@@ -408,6 +421,38 @@
                                     </div>
                                 </div>
                             </div>
+
+                            @php $mews = $latestVital->mews_classification; @endphp
+                            <!-- MEWS Clinical Early Warning Banner -->
+                            <div class="mt-3 p-3 rounded border d-flex align-items-center justify-content-between {{ $mews['is_emergency'] ? 'bg-danger-subtle border-danger text-danger' : ($mews['score'] >= 3 ? 'bg-warning-subtle border-warning text-dark' : 'bg-light border-secondary-subtle text-dark') }}">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="fs-3">
+                                        @if($mews['is_emergency'])
+                                            <i class="bi bi-exclamation-triangle-fill text-danger animate-pulse"></i>
+                                        @elseif($mews['score'] >= 3)
+                                            <i class="bi bi-exclamation-circle-fill text-warning"></i>
+                                        @else
+                                            <i class="bi bi-shield-check text-success"></i>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold d-flex align-items-center gap-2">
+                                            <span>Thang Điểm Cảnh Báo Lâm Sàng Sớm (MEWS):</span>
+                                            <span class="badge {{ $mews['badge_class'] }} fs-6 px-2 py-1">
+                                                {{ $mews['score'] }} Điểm &bull; {{ $mews['level'] }}
+                                            </span>
+                                        </div>
+                                        <div class="small mt-1 {{ $mews['is_emergency'] ? 'fw-bold text-danger' : 'text-muted' }}">
+                                            <i class="bi bi-info-circle me-1"></i> {{ $mews['action_text'] }}
+                                        </div>
+                                    </div>
+                                </div>
+                                @if($mews['is_emergency'])
+                                    <span class="badge bg-danger text-white p-2 text-uppercase fw-bold shadow-sm">
+                                        <i class="bi bi-bell-fill me-1"></i> Báo Động Cấp Cứu
+                                    </span>
+                                @endif
+                            </div>
                         </div>
 
                         <!-- Interactive Chart Container -->
@@ -431,6 +476,7 @@
                                             <th>Mạch (l/p)</th>
                                             <th>Nhiệt độ</th>
                                             <th>SpO2</th>
+                                            <th>Cảnh báo MEWS</th>
                                             <th>BMI / Thể trạng</th>
                                             <th>Người đo</th>
                                             <th>Ghi chú lâm sàng</th>
@@ -439,7 +485,8 @@
                                     </thead>
                                     <tbody>
                                         @foreach($patient->vitals as $vital)
-                                            <tr>
+                                            @php $vMews = $vital->mews_classification; @endphp
+                                            <tr class="{{ $vMews['is_emergency'] ? 'table-danger' : '' }}">
                                                 <td class="ps-3 font-monospace fw-bold text-dark">
                                                     {{ $vital->recorded_at->format('d/m/Y H:i') }}
                                                 </td>
@@ -467,6 +514,11 @@
                                                 <td>
                                                     <span class="font-monospace {{ $vital->isHypoxia() ? 'badge bg-danger text-white' : '' }}">
                                                         {{ $vital->spo2 ? $vital->spo2 . '%' : '--' }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge {{ $vMews['badge_class'] }} font-monospace" title="{{ $vMews['action_text'] }}">
+                                                        {{ $vMews['score'] }}đ &bull; {{ $vMews['level'] }}
                                                     </span>
                                                 </td>
                                                 <td>
@@ -510,6 +562,187 @@
                             </button>
                         </div>
                     @endif
+                </div>
+            </div>
+
+            <!-- TAB 4: Clinical & Security Audit Trail -->
+            <div class="tab-pane fade" id="audit" role="tabpanel">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div>
+                            <h6 class="card-title fw-bold text-dark mb-0">
+                                <i class="bi bi-shield-lock-fill text-info me-1"></i> Nhật Ký Truy Vết Y Khoa & Giám Sát An Toàn (Audit Trail)
+                            </h6>
+                            <small class="text-muted">Tuân thủ Thông tư 46/2018/TT-BYT & Tiêu chuẩn bảo mật hồ sơ bệnh án điện tử (EMR/EHR)</small>
+                        </div>
+                        <span class="badge bg-light text-dark border font-monospace">
+                            <i class="bi bi-fingerprint text-primary me-1"></i>{{ $patient->auditLogs->count() }} bản ghi truy vết
+                        </span>
+                    </div>
+
+                    <div class="card-body p-0">
+                        @if($patient->auditLogs->isNotEmpty())
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 small">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-3" style="width: 170px;">Thời Gian</th>
+                                            <th style="width: 160px;">Nhân Sự Thao Tác</th>
+                                            <th style="width: 180px;">Hành Vi / Thao Tác</th>
+                                            <th>Mô Tả Chi Tiết</th>
+                                            <th style="width: 130px;">Địa Chỉ IP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($patient->auditLogs as $log)
+                                            @php $badge = $log->action_badge; @endphp
+                                            <tr>
+                                                <td class="ps-3 font-monospace text-dark">
+                                                    {{ $log->created_at->format('d/m/Y H:i:s') }}
+                                                </td>
+                                                <td>
+                                                    @if($log->user)
+                                                        <div class="fw-bold text-dark">{{ $log->user->name }}</div>
+                                                        <span class="badge bg-secondary-subtle text-secondary border small">{{ $log->user->role_name }}</span>
+                                                    @else
+                                                        <span class="text-muted fst-italic">Hệ thống tự động</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-{{ $badge['color'] }}-subtle text-{{ $badge['color'] }} border border-{{ $badge['color'] }}-subtle px-2 py-1">
+                                                        <i class="bi {{ $badge['icon'] }} me-1"></i>{{ $badge['label'] }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="text-dark">{{ $log->description }}</div>
+                                                    @if($log->old_values && $log->new_values)
+                                                        <div class="mt-1">
+                                                            <a class="text-decoration-none small text-primary" data-bs-toggle="collapse" href="#diffLog{{ $log->id }}" role="button">
+                                                                <i class="bi bi-code-slash me-1"></i>Xem dữ liệu thay đổi
+                                                            </a>
+                                                            <div class="collapse mt-2" id="diffLog{{ $log->id }}">
+                                                                <div class="p-2 border rounded bg-light font-monospace small" style="font-size: 0.75rem;">
+                                                                    <div class="text-danger"><strong>- Dữ liệu cũ:</strong> {{ json_encode($log->old_values, JSON_UNESCAPED_UNICODE) }}</div>
+                                                                    <div class="text-success mt-1"><strong>+ Dữ liệu mới:</strong> {{ json_encode($log->new_values, JSON_UNESCAPED_UNICODE) }}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <code class="text-muted">{{ $log->ip_address ?: '127.0.0.1' }}</code>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="p-5 text-center text-muted">
+                                <i class="bi bi-shield-slash fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                Chưa có nhật ký truy vết nào được ghi nhận cho hồ sơ này.
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: Informed Consents & Digital Signatures -->
+            <div class="tab-pane fade" id="consents" role="tabpanel">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div>
+                            <h6 class="card-title fw-bold text-dark mb-0">
+                                <i class="bi bi-file-earmark-check-fill text-success me-1"></i> Hồ Sơ Cam Đoan Phẫu Thuật / Thủ Thuật Y Khoa Ký Số (E-Consent)
+                            </h6>
+                            <small class="text-muted">Lưu trữ chữ ký điện tử hợp pháp của Bệnh nhân / Thân nhân theo Luật Khám bệnh, chữa bệnh 2023</small>
+                        </div>
+                        <a href="{{ route('reception.consents.create', $patient) }}" class="btn btn-success btn-sm shadow-sm">
+                            <i class="bi bi-pen-fill me-1"></i> Lập Bản Cam Đoan Ký Số Mới
+                        </a>
+                    </div>
+
+                    <div class="card-body p-0">
+                        @if($patient->informedConsents->isNotEmpty())
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 small">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-3" style="width: 140px;">Mã Bản Cam Kết</th>
+                                            <th>Tên Thủ Thuật / Phẫu Thuật</th>
+                                            <th>Bác Sĩ Phụ Trách</th>
+                                            <th>Người Ký & Quan Hệ</th>
+                                            <th style="width: 130px;">Chữ Ký Số</th>
+                                            <th style="width: 150px;">Thời Gian Ký</th>
+                                            <th class="text-end pe-3" style="width: 130px;">Thao Tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($patient->informedConsents as $consent)
+                                            <tr>
+                                                <td class="ps-3 font-monospace fw-bold text-primary">
+                                                    {{ $consent->consent_code }}
+                                                </td>
+                                                <td>
+                                                    <strong class="text-dark d-block">{{ $consent->procedure_name }}</strong>
+                                                    <span class="badge bg-light text-dark border">{{ $consent->department_name }}</span>
+                                                </td>
+                                                <td>
+                                                    {{ $consent->doctor ? $consent->doctor->full_name_with_title : '--' }}
+                                                </td>
+                                                <td>
+                                                    <div class="fw-bold text-dark">{{ $consent->signer_name }}</div>
+                                                    <span class="badge bg-secondary-subtle text-secondary small">{{ $consent->signer_relationship_text }}</span>
+                                                    @if($consent->signer_id_card)
+                                                        <div class="text-muted" style="font-size: 0.72rem;">CCCD: {{ $consent->signer_id_card }}</div>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($consent->signature_data)
+                                                        <div class="border rounded bg-white p-1 text-center" style="max-width: 100px;">
+                                                            <img src="{{ $consent->signature_data }}" alt="Chữ ký" style="height: 32px; max-width: 100%; object-fit: contain;">
+                                                        </div>
+                                                        <span class="badge bg-success-subtle text-success mt-1" style="font-size: 0.65rem;">
+                                                            <i class="bi bi-shield-check"></i> Đã ký số
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-warning-subtle text-warning">Chưa ký</span>
+                                                    @endif
+                                                </td>
+                                                <td class="font-monospace text-muted">
+                                                    {{ $consent->signed_at ? $consent->signed_at->format('d/m/Y H:i') : '--' }}
+                                                    <div style="font-size: 0.7rem;">IP: {{ $consent->ip_address ?: '127.0.0.1' }}</div>
+                                                </td>
+                                                <td class="text-end pe-3">
+                                                    <div class="d-inline-flex gap-1">
+                                                        <a href="{{ route('reception.consents.print', $consent) }}" target="_blank" class="btn btn-outline-primary btn-sm py-1 px-2" title="In bản cam đoan chuẩn Bộ Y Tế">
+                                                            <i class="bi bi-printer"></i>
+                                                        </a>
+                                                        <form action="{{ route('reception.consents.destroy', $consent) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bản cam đoan này?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-outline-danger btn-sm py-1 px-2" title="Xóa">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="p-5 text-center text-muted">
+                                <i class="bi bi-file-earmark-lock fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                <h6 class="fw-bold text-dark">Chưa có bản cam đoan nào được lập cho bệnh nhân này</h6>
+                                <p class="small text-muted mb-3">Thực hiện lập và ký số giấy cam đoan phẫu thuật/thủ thuật trên màn hình cảm ứng hoặc tablet trước khi can thiệp y khoa.</p>
+                                <a href="{{ route('reception.consents.create', $patient) }}" class="btn btn-success btn-sm">
+                                    <i class="bi bi-pen me-1"></i> Lập Bản Cam Đoan Mới Ngay
+                                </a>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -609,6 +842,22 @@
                             <div class="input-group input-group-sm">
                                 <input type="number" name="height" step="0.5" class="form-control font-monospace" placeholder="VD: 168" min="30" max="250">
                                 <span class="input-group-text">cm</span>
+                            </div>
+                        </div>
+
+                        <!-- Live MEWS Score Calculation Box -->
+                        <div class="col-12">
+                            <div id="modalMewsBox" class="p-3 rounded border bg-light d-flex align-items-center justify-content-between transition">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i id="modalMewsIcon" class="bi bi-heart-pulse-fill fs-4 text-primary"></i>
+                                    <div>
+                                        <div class="small fw-bold">Thang Điểm Cảnh Báo Lâm Sàng Sớm (MEWS Realtime):</div>
+                                        <div id="modalMewsText" class="small text-muted">Nhập các chỉ số sinh hiệu phía trên để hệ thống tự động phân tầng nguy cơ lâm sàng.</div>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <span id="modalMewsBadge" class="badge bg-secondary fs-6 px-3 py-2 font-monospace">0 Điểm</span>
+                                </div>
                             </div>
                         </div>
 
@@ -735,6 +984,88 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             }
+        }
+    });
+
+    // MEWS Realtime Live Calculator in Modal
+    const sysInput = document.querySelector('input[name="systolic_bp"]');
+    const hrInput = document.querySelector('input[name="heart_rate"]');
+    const tempInput = document.querySelector('input[name="temperature"]');
+    const spo2Input = document.querySelector('input[name="spo2"]');
+    const mewsBox = document.getElementById('modalMewsBox');
+    const mewsIcon = document.getElementById('modalMewsIcon');
+    const mewsText = document.getElementById('modalMewsText');
+    const mewsBadge = document.getElementById('modalMewsBadge');
+
+    function calculateLiveMews() {
+        if (!mewsBox || !mewsBadge) return;
+
+        const sys = parseFloat(sysInput?.value) || null;
+        const hr = parseFloat(hrInput?.value) || null;
+        const temp = parseFloat(tempInput?.value) || null;
+        const spo2 = parseFloat(spo2Input?.value) || null;
+
+        if (!sys && !hr && !temp && !spo2) {
+            mewsBox.className = 'p-3 rounded border bg-light d-flex align-items-center justify-content-between transition';
+            mewsIcon.className = 'bi bi-heart-pulse-fill fs-4 text-primary';
+            mewsText.textContent = 'Nhập các chỉ số sinh hiệu phía trên để hệ thống tự động phân tầng nguy cơ lâm sàng.';
+            mewsBadge.className = 'badge bg-secondary fs-6 px-3 py-2 font-monospace';
+            mewsBadge.textContent = '0 Điểm';
+            return;
+        }
+
+        let score = 0;
+        // 1. Systolic BP
+        if (sys !== null) {
+            if (sys <= 70) score += 3;
+            else if (sys <= 80) score += 2;
+            else if (sys <= 100) score += 1;
+            else if (sys >= 200) score += 2;
+        }
+        // 2. Heart rate
+        if (hr !== null) {
+            if (hr < 40) score += 2;
+            else if (hr <= 50) score += 1;
+            else if (hr >= 130) score += 3;
+            else if (hr >= 111) score += 2;
+            else if (hr >= 101) score += 1;
+        }
+        // 3. Temp
+        if (temp !== null) {
+            if (temp < 35.0) score += 2;
+            else if (temp >= 38.5) score += 2;
+        }
+        // 4. SpO2
+        if (spo2 !== null) {
+            if (spo2 < 90) score += 3;
+            else if (spo2 <= 92) score += 2;
+            else if (spo2 <= 94) score += 1;
+        }
+
+        if (score >= 5) {
+            mewsBox.className = 'p-3 rounded border border-danger bg-danger-subtle d-flex align-items-center justify-content-between transition';
+            mewsIcon.className = 'bi bi-exclamation-octagon-fill fs-3 text-danger animate-pulse';
+            mewsText.innerHTML = '<strong class="text-danger">🚨 CẢNH BÁO NGUY CƠ CHUYỂN BIẾN NẶNG!</strong> Kích hoạt chuông cấp cứu, ưu tiên xử trí khẩn cấp.';
+            mewsBadge.className = 'badge bg-danger fs-6 px-3 py-2 font-monospace shadow-sm';
+            mewsBadge.textContent = `${score} Điểm - Báo Động Đỏ`;
+        } else if (score >= 3) {
+            mewsBox.className = 'p-3 rounded border border-warning bg-warning-subtle d-flex align-items-center justify-content-between transition';
+            mewsIcon.className = 'bi bi-exclamation-triangle-fill fs-4 text-warning';
+            mewsText.innerHTML = '<strong class="text-dark">⚠️ NGUY CƠ TRUNG BÌNH (MỨC VÀNG):</strong> Ưu tiên khám sớm, báo điều dưỡng theo dõi sát sinh hiệu.';
+            mewsBadge.className = 'badge bg-warning text-dark fs-6 px-3 py-2 font-monospace';
+            mewsBadge.textContent = `${score} Điểm - Mức Vàng`;
+        } else {
+            mewsBox.className = 'p-3 rounded border border-success bg-success-subtle d-flex align-items-center justify-content-between transition';
+            mewsIcon.className = 'bi bi-check-circle-fill fs-4 text-success';
+            mewsText.innerHTML = '<span class="text-success fw-semibold">✅ NGUY CƠ THẤP (MỨC XANH):</span> Chỉ số sinh hiệu ổn định, tiến hành khám thường quy.';
+            mewsBadge.className = 'badge bg-success fs-6 px-3 py-2 font-monospace';
+            mewsBadge.textContent = `${score} Điểm - An Toàn`;
+        }
+    }
+
+    [sysInput, hrInput, tempInput, spo2Input].forEach(inp => {
+        if (inp) {
+            inp.addEventListener('input', calculateLiveMews);
         }
     });
 });

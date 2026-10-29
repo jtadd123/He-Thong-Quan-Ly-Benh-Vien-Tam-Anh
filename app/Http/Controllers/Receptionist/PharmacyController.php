@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Receptionist;
 
 use App\Http\Controllers\Controller;
+use App\Models\ClinicalAuditLog;
 use App\Models\MedicalRecord;
 use App\Models\Medication;
+use App\Models\Prescription;
+use App\Services\AllergyCrossReactionService;
+use App\Services\PrescriptionLabelService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -82,13 +86,27 @@ class PharmacyController extends Controller
     }
 
     /**
-     * Mark a prescription record as dispensed.
+     * Mark a prescription record as dispensed with FEFO safety guard.
      */
     public function dispense(Request $request, MedicalRecord $record): RedirectResponse
     {
         $validated = $request->validate([
             'dispense_notes' => ['nullable', 'string', 'max:255'],
         ]);
+
+        $record->load(['prescriptions', 'patientProfile']);
+
+        // 1. FEFO Expiry Safety Guard: Block expired or critical near-expired medications (<=30 days)
+        foreach ($record->prescriptions as $p) {
+            $firstWord = explode(' ', trim($p->medication_name))[0] ?? '';
+            if (mb_strlen($firstWord) >= 3) {
+                $med = Medication::where('name', 'like', "%{$firstWord}%")->first();
+                if ($med && !$med->fefo_status['is_dispensable']) {
+                    $expStr = $med->expiry_date ? $med->expiry_date->format('d/m/Y') : 'Không xác định';
+                    return back()->with('error', "CẢNH BÁO AN TOÀN DƯỢC (GPP/JCI): Thuốc [{$med->name}] (Số Lô: {$med->batch_number}) {$med->fefo_status['label']} (HSD: {$expStr}). Hệ thống khóa tự động, nghiêm cấm xuất cấp phát cho bệnh nhân!");
+                }
+            }
+        }
 
         $record->update([
             'dispensed_at' => Carbon::now(),
@@ -97,7 +115,6 @@ class PharmacyController extends Controller
         ]);
 
         // Real-time automated medication inventory deduction
-        $record->load('prescriptions');
         foreach ($record->prescriptions as $p) {
             $firstWord = explode(' ', trim($p->medication_name))[0] ?? '';
             if (mb_strlen($firstWord) >= 3) {
@@ -109,6 +126,15 @@ class PharmacyController extends Controller
                 }
             }
         }
+
+        // Audit Trail: Record medication dispensing
+        ClinicalAuditLog::record(
+            $record->patient_profile_id,
+            'dispense',
+            "Cấp phát thuốc ngoại trú cho bệnh án {$record->record_code} ({$record->prescriptions->count()} mặt hàng thuốc)",
+            null,
+            ['dispense_notes' => $record->dispense_notes, 'record_code' => $record->record_code]
+        );
 
         return back()->with('success', "Đã xác nhận cấp phát thuốc thành công cho bệnh nhân {$record->patientProfile->full_name} (Mã đơn: {$record->record_code}). Đã cập nhật tồn kho dược ngoại trú.");
     }
@@ -136,6 +162,13 @@ class PharmacyController extends Controller
             'dispense_notes' => null,
         ]);
 
+        // Audit Trail: Record undo dispensing
+        ClinicalAuditLog::record(
+            $record->patient_profile_id,
+            'undo_dispense',
+            "Hoàn tác trạng thái cấp phát thuốc về chờ xử lý cho bệnh án {$record->record_code}"
+        );
+
         return back()->with('success', "Đã hoàn tác trạng thái cấp phát thuốc về 'Chờ phát thuốc' cho mã {$record->record_code} và hoàn lại tồn kho dược.");
     }
 
@@ -153,5 +186,48 @@ class PharmacyController extends Controller
         ]);
 
         return view('receptionist.pharmacy.label', compact('record'));
+    }
+
+    /**
+     * Phát lệnh gọi loa nhận thuốc tại quầy Dược ngoại trú.
+     */
+    public function callAudio(MedicalRecord $record, Request $request)
+    {
+        $counter = $request->input('counter_number', 'Quầy Dược 01');
+        $patientName = $record->patientProfile->full_name;
+        $speechText = "Kính mời bệnh nhân {$patientName}, mã đơn {$record->record_code}, vui lòng đến {$counter} nhận thuốc và nghe tư vấn sử dụng!";
+
+        return response()->json([
+            'success' => true,
+            'patient_name' => $patientName,
+            'record_code' => $record->record_code,
+            'counter' => $counter,
+            'speech_text' => $speechText,
+        ]);
+    }
+
+    /**
+     * In toàn bộ tem nhãn dán hộp thuốc thông minh theo chuẩn decal nhiệt 75mm x 50mm.
+     */
+    public function printBottleLabels(MedicalRecord $record, PrescriptionLabelService $labelService): View
+    {
+        $labels = $labelService->generateLabelsForRecord($record);
+        return view('receptionist.pharmacy.bottle_labels', compact('record', 'labels'));
+    }
+
+    /**
+     * In một tem nhãn dán hộp thuốc đơn lẻ.
+     */
+    public function printSingleBottleLabel(Prescription $prescription, PrescriptionLabelService $labelService): View
+    {
+        $record = $prescription->medicalRecord;
+        $record->load(['appointment.patientProfile', 'appointment.doctor.specialty']);
+        $patient = $record->patientProfile ?? $record->appointment->patientProfile;
+        $doctor = $record->doctor ?? $record->appointment->doctor;
+
+        $label = $labelService->buildSingleLabelData($record, $prescription, $patient, $doctor);
+        $labels = [$label];
+
+        return view('receptionist.pharmacy.bottle_labels', compact('record', 'labels'));
     }
 }

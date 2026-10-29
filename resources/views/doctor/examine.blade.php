@@ -265,11 +265,17 @@
                         <!-- Prescription Rows inserted here by JS -->
                     </div>
 
-                    <div class="mt-3">
+                    <div class="mt-3 d-flex justify-content-between align-items-center">
                         <button type="button" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 shadow-sm" onclick="addPrescriptionRow()">
                             <i class="bi bi-plus-circle-fill"></i> Thêm thuốc khác
                         </button>
+                        <span class="text-muted small">
+                            <i class="bi bi-shield-check text-success me-1"></i>Đang bật kiểm tra Tương tác thuốc (DDI) & An toàn dị ứng thời gian thực
+                        </span>
                     </div>
+
+                    <!-- Clinical Drug-Drug Interaction (DDI) Alert Box -->
+                    <div id="ddiAlertContainer" class="mt-3" style="display: none;"></div>
                 </div>
             </div>
 
@@ -449,14 +455,108 @@
         container.insertAdjacentHTML('beforeend', rowHtml);
 
         const insertedInput = document.querySelector(`input[name="prescriptions[${idx}][medication_name]"]`);
-        if (insertedInput && medName) {
-            checkAllergyConflict(insertedInput, idx);
+        if (insertedInput) {
+            insertedInput.addEventListener('input', function() {
+                checkAllergyConflict(this, idx);
+                runDdiInteractionCheck();
+            });
+            if (medName) {
+                checkAllergyConflict(insertedInput, idx);
+            }
         }
+        runDdiInteractionCheck();
     }
 
     function removePrescriptionRow(idx) {
         const row = document.getElementById(`pres-row-${idx}`);
         if (row) row.remove();
+        runDdiInteractionCheck();
+    }
+
+    // Drug-Drug Interaction (DDI) Client Engine
+    const ddiRules = [
+        {
+            a: ['aspirin', 'aspilet'],
+            b: ['ibuprofen', 'diclofenac', 'meloxicam', 'celecoxib'],
+            severity: 'danger',
+            title: 'Tương tác Chống chỉ định: Nguy cơ xuất huyết tiêu hóa & thủng dạ dày',
+            desc: 'Dùng chung Aspirin với NSAID làm tăng gấp 5 lần nguy cơ loét và xuất huyết dạ dày tá tràng nặng.',
+            advice: 'Đổi sang Paracetamol hoặc bổ sung thuốc ức chế bơm proton (Nexium 40mg).'
+        },
+        {
+            a: ['paracetamol', 'panadol', 'efferalgan'],
+            b: ['paracetamol', 'panadol', 'efferalgan', 'hapacol'],
+            severity: 'danger',
+            title: 'Trùng lặp hoạt chất Paracetamol: Nguy cơ hoại tử tế bào gan cấp',
+            desc: 'Đơn thuốc chứa từ 2 chế phẩm có cùng Paracetamol, rất dễ vượt ngưỡng ngộ độc 4g/ngày.',
+            advice: 'Chỉ chọn 1 biệt dược giảm đau hạ sốt duy nhất.'
+        },
+        {
+            a: ['clarithromycin', 'erythromycin'],
+            b: ['amlodipine', 'amlodipin', 'simvastatin', 'atorvastatin'],
+            severity: 'danger',
+            title: 'Tương tác ức chế men gan CYP3A4 nguy cơ cao',
+            desc: 'Macrolid làm tăng vọt nồng độ Amlodipine/Statin gây tụt huyết áp nghiêm trọng hoặc tiêu cơ vân.',
+            advice: 'Cân nhắc chuyển sang Augmentin hoặc tạm ngưng thuốc tim mạch trong đợt kháng sinh.'
+        },
+        {
+            a: ['ciprofloxacin', 'levofloxacin'],
+            b: ['canxi', 'calcium', 'sat', 'iron', 'antacid'],
+            severity: 'warning',
+            title: 'Tương tác tạo phức Chelate giảm hấp thu kháng sinh',
+            desc: 'Các ion kim loại làm giảm hấp thu kháng sinh đường ruột tới 80%.',
+            advice: 'Uống kháng sinh cách thuốc bổ sung canxi/sắt ít nhất 2 đến 4 giờ.'
+        }
+    ];
+
+    function runDdiInteractionCheck() {
+        const ddiContainer = document.getElementById('ddiAlertContainer');
+        if (!ddiContainer) return;
+
+        const inputs = Array.from(document.querySelectorAll('input[name^="prescriptions"][name$="[medication_name]"]'));
+        const meds = inputs.map(i => (i.value || '').trim().toLowerCase()).filter(v => v.length >= 3);
+
+        const foundAlerts = [];
+
+        for (let i = 0; i < meds.length; i++) {
+            for (let j = i + 1; j < meds.length; j++) {
+                const medA = meds[i];
+                const medB = meds[j];
+
+                ddiRules.forEach(r => {
+                    const matchAB = r.a.some(k => medA.includes(k)) && r.b.some(k => medB.includes(k));
+                    const matchBA = r.a.some(k => medB.includes(k)) && r.b.some(k => medA.includes(k));
+
+                    if (matchAB || matchBA) {
+                        foundAlerts.push({
+                            ...r,
+                            pair: `${inputs[i].value} & ${inputs[j].value}`
+                        });
+                    }
+                });
+            }
+        }
+
+        if (foundAlerts.length === 0) {
+            ddiContainer.style.display = 'none';
+            ddiContainer.innerHTML = '';
+            return;
+        }
+
+        ddiContainer.style.display = 'block';
+        ddiContainer.innerHTML = foundAlerts.map(a => `
+            <div class="alert alert-${a.severity} border-${a.severity} shadow-sm p-3 mb-2">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="bi bi-exclamation-triangle-fill fs-5 text-${a.severity}"></i>
+                    <strong class="text-uppercase small">${a.title}</strong>
+                    <span class="badge bg-${a.severity} text-white ms-auto">${a.pair}</span>
+                </div>
+                <div class="small text-dark mb-1">${a.desc}</div>
+                <div class="small fw-bold text-${a.severity}">
+                    <i class="bi bi-lightbulb me-1"></i>Khuyến nghị xử trí: ${a.advice}
+                </div>
+            </div>
+        `).join('');
     }
 
     function addQuickMedication(name, dosage, frequency, duration, instructions) {

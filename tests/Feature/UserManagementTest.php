@@ -29,7 +29,7 @@ class UserManagementTest extends TestCase
     public function test_admin_can_create_a_new_user(): void
     {
         $admin = User::where('role', User::ROLE_ADMIN)->first();
-        $email = 'testuser_' . rand(1000, 9999) . '@tamanh.vn';
+        $email = 'testuser_' . time() . '_' . rand(100000, 999999) . '@tamanh.vn';
 
         $response = $this->actingAs($admin)->post('/admin/users', [
             'name' => 'Nhân viên Mới',

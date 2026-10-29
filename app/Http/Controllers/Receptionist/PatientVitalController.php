@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Receptionist;
 
 use App\Http\Controllers\Controller;
+use App\Models\ClinicalAuditLog;
 use App\Models\PatientProfile;
 use App\Models\PatientVital;
 use Carbon\Carbon;
@@ -45,6 +46,12 @@ class PatientVitalController extends Controller
             return back()->with('error', 'Vui lòng nhập ít nhất một chỉ số sinh hiệu (Huyết áp, Mạch, Thân nhiệt hoặc SpO2).');
         }
 
+        if (!empty($validated['systolic_bp']) && !empty($validated['diastolic_bp'])) {
+            if ($validated['systolic_bp'] <= $validated['diastolic_bp']) {
+                return back()->withInput()->with('error', 'Chỉ số huyết áp không hợp lệ theo chuẩn lâm sàng: Huyết áp tâm thu (' . $validated['systolic_bp'] . ' mmHg) phải lớn hơn huyết áp tâm trương (' . $validated['diastolic_bp'] . ' mmHg).');
+            }
+        }
+
         $vital = PatientVital::create([
             'patient_profile_id' => $patient->id,
             'appointment_id' => $validated['appointment_id'] ?? null,
@@ -59,6 +66,15 @@ class PatientVitalController extends Controller
             'height' => $validated['height'] ?? null,
             'notes' => $validated['notes'] ?? null,
         ]);
+
+        // Audit Trail: Record vitals measurement log
+        ClinicalAuditLog::record(
+            $patient,
+            'record_vitals',
+            "Ghi nhận chỉ số sinh hiệu: HA " . ($vital->systolic_bp ? "{$vital->systolic_bp}/{$vital->diastolic_bp} mmHg" : "chưa đo") . ", Mạch " . ($vital->heart_rate ? "{$vital->heart_rate} l/p" : "chưa đo"),
+            null,
+            $validated
+        );
 
         return back()->with('success', "Đã ghi nhận chỉ số sinh hiệu mới lúc {$vital->recorded_at->format('H:i d/m/Y')} cho bệnh nhân {$patient->full_name}.");
     }

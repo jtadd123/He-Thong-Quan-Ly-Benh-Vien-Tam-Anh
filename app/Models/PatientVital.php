@@ -145,4 +145,126 @@ class PatientVital extends Model
     {
         return $this->heart_rate !== null && $this->heart_rate < 60;
     }
+
+    /**
+     * Modified Early Warning Score (MEWS) Calculation.
+     * Standard clinical protocol for early detection of deteriorating patients.
+     *
+     * @return array{score: int, level: string, color: string, badge_class: string, action_text: string, is_emergency: bool}
+     */
+    public static function calculateMews(?int $sys, ?int $hr, ?float $temp, ?int $spo2): array
+    {
+        $score = 0;
+        $hasData = false;
+
+        // 1. Systolic Blood Pressure (mmHg)
+        if ($sys !== null && $sys > 0) {
+            $hasData = true;
+            if ($sys <= 70) {
+                $score += 3;
+            } elseif ($sys <= 80) {
+                $score += 2;
+            } elseif ($sys <= 100) {
+                $score += 1;
+            } elseif ($sys >= 200) {
+                $score += 2;
+            }
+        }
+
+        // 2. Heart Rate (bpm)
+        if ($hr !== null && $hr > 0) {
+            $hasData = true;
+            if ($hr < 40) {
+                $score += 2;
+            } elseif ($hr <= 50) {
+                $score += 1;
+            } elseif ($hr >= 130) {
+                $score += 3;
+            } elseif ($hr >= 111) {
+                $score += 2;
+            } elseif ($hr >= 101) {
+                $score += 1;
+            }
+        }
+
+        // 3. Temperature (°C)
+        if ($temp !== null && $temp > 0) {
+            $hasData = true;
+            if ($temp < 35.0) {
+                $score += 2;
+            } elseif ($temp >= 38.5) {
+                $score += 2;
+            }
+        }
+
+        // 4. SpO2 Oxygen Saturation (%)
+        if ($spo2 !== null && $spo2 > 0) {
+            $hasData = true;
+            if ($spo2 < 90) {
+                $score += 3;
+            } elseif ($spo2 <= 92) {
+                $score += 2;
+            } elseif ($spo2 <= 94) {
+                $score += 1;
+            }
+        }
+
+        if (!$hasData) {
+            return [
+                'score' => 0,
+                'level' => 'Chưa đủ dữ liệu',
+                'color' => 'secondary',
+                'badge_class' => 'bg-secondary text-white',
+                'action_text' => 'Chưa ghi nhận đủ các chỉ số sinh hiệu',
+                'is_emergency' => false,
+            ];
+        }
+
+        if ($score >= 5) {
+            return [
+                'score' => $score,
+                'level' => 'Nguy Cơ Cao (Báo Động Đỏ)',
+                'color' => 'danger',
+                'badge_class' => 'bg-danger text-white animate-pulse',
+                'action_text' => 'CẢNH BÁO NGUY CƠ CHUYỂN BIẾN NẶNG! Báo bác sĩ hồi sức/cấp cứu ngay lập tức, chuyển phòng xử trí cấp cứu',
+                'is_emergency' => true,
+            ];
+        }
+
+        if ($score >= 3) {
+            return [
+                'score' => $score,
+                'level' => 'Nguy Cơ Trung Bình (Mức Vàng)',
+                'color' => 'warning',
+                'badge_class' => 'bg-warning text-dark',
+                'action_text' => 'Ưu tiên khám sớm, báo điều dưỡng trưởng và bác sĩ phòng khám theo dõi sát',
+                'is_emergency' => false,
+            ];
+        }
+
+        return [
+            'score' => $score,
+            'level' => 'Nguy Cơ Thấp (Mức Xanh)',
+            'color' => 'success',
+            'badge_class' => 'bg-success text-white',
+            'action_text' => 'Chỉ số sinh hiệu ổn định, khám bệnh theo thứ tự thường quy',
+            'is_emergency' => false,
+        ];
+    }
+
+    /**
+     * Get MEWS Score attribute for this record.
+     */
+    public function getMewsScoreAttribute(): int
+    {
+        return $this->mews_classification['score'];
+    }
+
+    /**
+     * Get MEWS Classification attribute for this record.
+     */
+    public function getMewsClassificationAttribute(): array
+    {
+        return self::calculateMews($this->systolic_bp, $this->heart_rate, $this->temperature, $this->spo2);
+    }
 }

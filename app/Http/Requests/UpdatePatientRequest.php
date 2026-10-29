@@ -20,8 +20,8 @@ class UpdatePatientRequest extends FormRequest
             'phone' => ['required', 'string', 'regex:/^(0|\+84)[0-9]{9,10}$/', 'max:20'],
             'email' => ['nullable', 'string', 'email', 'max:150'],
             'address' => ['nullable', 'string', 'max:255'],
-            'identity_card' => ['nullable', 'string', 'max:20'],
-            'insurance_code' => ['nullable', 'string', 'max:30'],
+            'identity_card' => ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z0-9]+$/'],
+            'insurance_code' => ['nullable', 'string', 'max:30', 'regex:/^[A-Za-z0-9]+$/'],
             'blood_group' => ['nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
             'allergies' => ['nullable', 'string', 'max:255'],
             'medical_history' => ['nullable', 'string', 'max:1000'],
@@ -45,7 +45,9 @@ class UpdatePatientRequest extends FormRequest
             'email.max' => 'Email không được vượt quá 150 ký tự.',
             'address.max' => 'Địa chỉ không được vượt quá 255 ký tự.',
             'identity_card.max' => 'Số CCCD/CMND không được vượt quá 20 ký tự.',
+            'identity_card.regex' => 'Số CCCD/CMND/Hộ chiếu chỉ được chứa chữ cái và chữ số, không chứa ký tự đặc biệt hoặc khoảng trắng.',
             'insurance_code.max' => 'Mã thẻ BHYT không được vượt quá 30 ký tự.',
+            'insurance_code.regex' => 'Mã thẻ BHYT chỉ được chứa chữ cái và chữ số không dấu (chuẩn BHXH Việt Nam).',
         ];
     }
 }

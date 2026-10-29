@@ -82,26 +82,34 @@
     <div class="card-body p-3">
         <form method="GET" action="{{ route('reception.pharmacy.inventory.index') }}" class="row g-2 align-items-center">
             <!-- Status Tabs / Buttons -->
-            <div class="col-md-6">
-                <div class="btn-group btn-group-sm w-100" role="group">
+            <div class="col-md-7">
+                <div class="btn-group btn-group-sm w-100 flex-wrap" role="group">
                     <a href="{{ route('reception.pharmacy.inventory.index', ['status' => 'all', 'q' => $search]) }}" class="btn {{ $status === 'all' ? 'btn-primary' : 'btn-outline-secondary' }}">
                         Tất cả ({{ $totalCount }})
                     </a>
+                    <a href="{{ route('reception.pharmacy.inventory.index', ['status' => 'fefo', 'q' => $search]) }}" class="btn {{ $status === 'fefo' ? 'btn-dark text-white fw-bold' : 'btn-outline-secondary' }}" title="Sắp xếp ưu tiên thuốc hạn dùng gần nhất xuất trước">
+                        <i class="bi bi-arrow-down-up me-1"></i> Chuẩn FEFO
+                    </a>
+                    <a href="{{ route('reception.pharmacy.inventory.index', ['status' => 'expiring_soon', 'q' => $search]) }}" class="btn {{ $status === 'expiring_soon' ? 'btn-warning text-dark fw-bold' : 'btn-outline-secondary' }}">
+                        <i class="bi bi-clock-history me-1"></i> Cận hạn ({{ $expiringSoonCount }})
+                    </a>
+                    @if(($expiredCount ?? 0) > 0)
+                        <a href="{{ route('reception.pharmacy.inventory.index', ['status' => 'expired', 'q' => $search]) }}" class="btn {{ $status === 'expired' ? 'btn-danger text-white fw-bold' : 'btn-outline-danger' }}">
+                            <i class="bi bi-x-octagon-fill me-1"></i> Hết hạn ({{ $expiredCount }})
+                        </a>
+                    @endif
                     <a href="{{ route('reception.pharmacy.inventory.index', ['status' => 'low_stock', 'q' => $search]) }}" class="btn {{ $status === 'low_stock' ? 'btn-warning text-dark fw-bold' : 'btn-outline-secondary' }}">
-                        <i class="bi bi-exclamation-triangle me-1"></i> Sắp hết ({{ $lowStockCount }})
+                        Sắp hết ({{ $lowStockCount }})
                     </a>
                     <a href="{{ route('reception.pharmacy.inventory.index', ['status' => 'out_of_stock', 'q' => $search]) }}" class="btn {{ $status === 'out_of_stock' ? 'btn-danger text-white fw-bold' : 'btn-outline-secondary' }}">
-                        <i class="bi bi-slash-circle me-1"></i> Hết hàng ({{ $outOfStockCount }})
-                    </a>
-                    <a href="{{ route('reception.pharmacy.inventory.index', ['status' => 'expiring_soon', 'q' => $search]) }}" class="btn {{ $status === 'expiring_soon' ? 'btn-info text-dark fw-bold' : 'btn-outline-secondary' }}">
-                        <i class="bi bi-clock-history me-1"></i> Sắp hết hạn ({{ $expiringSoonCount }})
+                        Hết hàng ({{ $outOfStockCount }})
                     </a>
                 </div>
                 <input type="hidden" name="status" value="{{ $status }}">
             </div>
 
             <!-- Search Bar -->
-            <div class="col-md-6">
+            <div class="col-md-5">
                 <div class="input-group input-group-sm">
                     <input type="text" name="q" value="{{ $search }}" class="form-control" placeholder="Tìm kiếm theo mã thuốc, tên biệt dược, hoạt chất hoặc số lô...">
                     <button class="btn btn-outline-primary" type="submit">
@@ -186,23 +194,13 @@
                                 <div class="text-muted small">/ {{ $med->unit }}</div>
                             </td>
 
-                            <!-- Số lô & Hạn dùng -->
+                            <!-- Số lô & Hạn dùng (FEFO Tracker) -->
                             <td>
-                                <div class="small">
-                                    <span class="text-muted">Lô:</span> <span class="font-monospace fw-bold">{{ $med->batch_number ?? '---' }}</span>
+                                <div class="small mb-1">
+                                    <span class="text-muted">Lô SX:</span> <span class="font-monospace fw-bold text-dark">{{ $med->batch_number ?? '---' }}</span>
                                 </div>
-                                <div class="small">
-                                    <span class="text-muted">HSD:</span>
-                                    @if($med->expiry_date)
-                                        <span class="{{ $med->isExpiringSoon() ? 'text-danger fw-bold' : 'text-dark' }}">
-                                            {{ $med->expiry_date->format('d/m/Y') }}
-                                        </span>
-                                        @if($med->isExpiringSoon())
-                                            <i class="bi bi-exclamation-circle text-danger ms-1" title="Hết hạn trong vòng 3 tháng"></i>
-                                        @endif
-                                    @else
-                                        <span class="text-muted">---</span>
-                                    @endif
+                                <div>
+                                    {!! $med->fefo_badge !!}
                                 </div>
                             </td>
 
