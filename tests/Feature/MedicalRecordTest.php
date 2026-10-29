@@ -133,7 +133,7 @@ class MedicalRecordTest extends TestCase
     public function test_doctor_can_open_examination_room_for_confirmed_appointment(): void
     {
         $appointment = Appointment::create([
-            'appointment_code' => 'AP-TEST-001',
+            'appointment_code' => Appointment::generateAppointmentCode(),
             'patient_profile_id' => $this->patientProfileA->id,
             'doctor_id' => $this->doctor->id,
             'specialty_id' => $this->specialty->id,
@@ -159,12 +159,13 @@ class MedicalRecordTest extends TestCase
     public function test_doctor_can_store_medical_record_and_prescriptions(): void
     {
         $appointment = Appointment::create([
-            'appointment_code' => 'AP-TEST-002',
+            'appointment_code' => Appointment::generateAppointmentCode(),
             'patient_profile_id' => $this->patientProfileA->id,
             'doctor_id' => $this->doctor->id,
             'specialty_id' => $this->specialty->id,
             'appointment_date' => Carbon::today(),
             'shift' => 'morning',
+            'symptom_description' => 'Họng đỏ, amidan sưng nhẹ',
             'status' => Appointment::STATUS_CONFIRMED,
         ]);
 
@@ -236,12 +237,13 @@ class MedicalRecordTest extends TestCase
         Storage::fake('local');
 
         $appointment = Appointment::create([
-            'appointment_code' => 'AP-TEST-003',
+            'appointment_code' => Appointment::generateAppointmentCode(),
             'patient_profile_id' => $this->patientProfileA->id,
             'doctor_id' => $this->doctor->id,
             'specialty_id' => $this->specialty->id,
             'appointment_date' => Carbon::today(),
             'shift' => 'morning',
+            'symptom_description' => 'Triệu chứng kiểm thử file upload',
             'status' => Appointment::STATUS_COMPLETED,
         ]);
 
@@ -286,12 +288,13 @@ class MedicalRecordTest extends TestCase
         Storage::fake('local');
 
         $appointment = Appointment::create([
-            'appointment_code' => 'AP-TEST-004',
+            'appointment_code' => Appointment::generateAppointmentCode(),
             'patient_profile_id' => $this->patientProfileA->id,
             'doctor_id' => $this->doctor->id,
             'specialty_id' => $this->specialty->id,
             'appointment_date' => Carbon::today(),
             'shift' => 'morning',
+            'symptom_description' => 'Bệnh án bảo mật',
             'status' => Appointment::STATUS_COMPLETED,
         ]);
 

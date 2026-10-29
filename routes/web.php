@@ -504,7 +504,7 @@ Route::middleware(['auth', 'role:doctor,admin'])->prefix('doctor')->name('doctor
     Route::get('/records/{record}', [DoctorConsultationController::class, 'showRecord'])->name('records.show');
     Route::get('/records/{record}/certificate', [SickLeaveCertificateController::class, 'create'])->name('records.certificate.create');
     Route::post('/records/{record}/certificate', [SickLeaveCertificateController::class, 'store'])->name('records.certificate.store');
-    Route::post('/records/{record}/attachments', [AttachmentController::class, 'upload'])->name('records.attachments.upload');
+    Route::post('/records/{record}/attachments', [DoctorConsultationController::class, 'uploadAttachment'])->name('records.attachments.upload');
     Route::delete('/records/{record}/attachments/{attachment}', [DoctorConsultationController::class, 'destroyAttachment'])->name('records.attachments.destroy');
     Route::get('/records/{record}/print', [DoctorConsultationController::class, 'printPrescription'])->name('records.print');
 });
@@ -512,7 +512,7 @@ Route::middleware(['auth', 'role:doctor,admin'])->prefix('doctor')->name('doctor
 // Nghiệp vụ Tệp y tế: Upload (Bác sĩ, Admin) & Download an toàn (Policy check cho Bệnh nhân, Bác sĩ, Admin)
 Route::middleware(['auth'])->group(function () {
     Route::post('/medical-records/{record}/attachments', [AttachmentController::class, 'upload'])
-        ->name('records.attachments.upload.global')
+        ->name('records.attachments.upload')
         ->middleware('role:doctor,admin');
 
     Route::get('/attachments/{attachment}/download', [AttachmentController::class, 'download'])
