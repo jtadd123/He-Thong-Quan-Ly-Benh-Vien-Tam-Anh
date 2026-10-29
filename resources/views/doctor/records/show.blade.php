@@ -244,8 +244,8 @@
                                         </div>
 
                                         <div class="pt-2 mt-2 border-top d-flex justify-content-between align-items-center">
-                                            <a href="{{ $att->url }}" target="_blank" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Mở tệp">
-                                                <i class="bi bi-box-arrow-up-right"></i> Mở
+                                            <a href="{{ route('attachments.download', $att) }}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2" title="Tải xuống tệp an toàn">
+                                                <i class="bi bi-download"></i> Tải về
                                             </a>
                                             <form action="{{ route('doctor.records.attachments.destroy', [$record, $att]) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa tệp cận lâm sàng này khỏi bệnh án?');">
                                                 @csrf

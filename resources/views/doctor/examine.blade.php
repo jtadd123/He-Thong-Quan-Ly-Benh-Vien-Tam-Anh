@@ -3,7 +3,7 @@
 @section('title', 'Bàn Khám Bác Sĩ - Bệnh Viện Tâm Anh')
 
 @section('content')
-<x-page-header title="Bàn Khám Bệnh Ngoại Trú" subtitle="Ghi nhận hồ sơ bệnh án, chẩn đoán lâm sàng và kê đơn thuốc điều trị">
+<x-page-header title="Bàn Khám Bệnh Ngoại Trú" subtitle="Bàn Khám Bệnh & Lập Bệnh Án - Ghi nhận hồ sơ bệnh án, chẩn đoán lâm sàng và kê đơn thuốc điều trị">
     <x-slot:actions>
         <a href="{{ route('doctor.queue') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1">
             <i class="bi bi-arrow-left"></i> Quay lại hàng đợi
@@ -168,6 +168,7 @@
     <div class="col-lg-8">
         <form method="POST" action="{{ route('doctor.examine.store', $appointment) }}" id="examinationForm" enctype="multipart/form-data">
             @csrf
+            <input type="hidden" name="appointment_id" value="{{ $appointment->id }}">
 
             <!-- 1. Clinical Diagnosis Section -->
             <div class="card shadow-sm border-0 mb-4">

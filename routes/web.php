@@ -9,6 +9,8 @@ use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\Doctor\ClinicalConsultationController;
 use App\Http\Controllers\Doctor\DoctorConsultationController;
 use App\Http\Controllers\Doctor\DoctorQueueController;
+use App\Http\Controllers\Doctor\MedicalRecordController;
+use App\Http\Controllers\Medical\AttachmentController;
 use App\Http\Controllers\Patient\PatientPortalController;
 use App\Http\Controllers\Public\BookingController;
 use App\Http\Controllers\Public\DeliveryTrackingController;
@@ -490,17 +492,31 @@ Route::get('/or-waiting-board', [OperatingRoomSuiteController::class, 'publicWai
 // =========================================================================
 // ====== MODULE 4: EXAMINATION & RECORDS (Phụ trách: VÕ LÊ GIA BẢO) =======
 // =========================================================================
+// =========================================================================
+// ====== MODULE 4: EXAMINATION & RECORDS (Phụ trách: VÕ LÊ GIA BẢO) =======
+// =========================================================================
 // Hàng đợi phòng khám của Bác sĩ & Khám bệnh
 Route::middleware(['auth', 'role:doctor,admin'])->prefix('doctor')->name('doctor.')->group(function () {
     Route::get('/queue', [DoctorQueueController::class, 'index'])->name('queue');
     Route::get('/examine/{appointment}', [DoctorConsultationController::class, 'examine'])->name('examine');
     Route::post('/examine/{appointment}', [DoctorConsultationController::class, 'store'])->name('examine.store');
+    Route::post('/examine', [MedicalRecordController::class, 'store'])->name('records.store');
     Route::get('/records/{record}', [DoctorConsultationController::class, 'showRecord'])->name('records.show');
     Route::get('/records/{record}/certificate', [SickLeaveCertificateController::class, 'create'])->name('records.certificate.create');
     Route::post('/records/{record}/certificate', [SickLeaveCertificateController::class, 'store'])->name('records.certificate.store');
-    Route::post('/records/{record}/attachments', [DoctorConsultationController::class, 'uploadAttachment'])->name('records.attachments.upload');
+    Route::post('/records/{record}/attachments', [AttachmentController::class, 'upload'])->name('records.attachments.upload');
     Route::delete('/records/{record}/attachments/{attachment}', [DoctorConsultationController::class, 'destroyAttachment'])->name('records.attachments.destroy');
     Route::get('/records/{record}/print', [DoctorConsultationController::class, 'printPrescription'])->name('records.print');
+});
+
+// Nghiệp vụ Tệp y tế: Upload (Bác sĩ, Admin) & Download an toàn (Policy check cho Bệnh nhân, Bác sĩ, Admin)
+Route::middleware(['auth'])->group(function () {
+    Route::post('/medical-records/{record}/attachments', [AttachmentController::class, 'upload'])
+        ->name('records.attachments.upload.global')
+        ->middleware('role:doctor,admin');
+
+    Route::get('/attachments/{attachment}/download', [AttachmentController::class, 'download'])
+        ->name('attachments.download');
 });
 
 // =========================================================================
