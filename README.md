@@ -12,8 +12,8 @@
 | :---: | :--- | :--- | :--- |
 | 1 | **Nguyễn Thành Quý** | **Technical Lead & System Core** | Kiến trúc hệ thống, Khởi tạo dự án, Auth & RBAC Middleware, Master Layouts, Engine Đặt lịch khám, Mail thông báo & Điều phối tích hợp Git |
 | 2 | **Nguyễn Văn Đạt** | **Master Data & Public Portal** | Quản lý Chuyên khoa (CRUD), Hồ sơ Bác sĩ, Cấu hình Lịch trực ca trong tuần, Giao diện Trang chủ & Danh bạ Bác sĩ Responsive |
-| 3 | **Nguyễn Văn Hưng** | **Patient Reception, Clinical Safety & Smart Hospital Suite** | Quản lý Hồ sơ BN, Bàn tiếp nhận, Kiosk sảnh, Thuốc độc TT20, Cấp cứu Triage ATS, Báo động đỏ, NEWS2 & RRT, Chuỗi lạnh IoT, CSSD, Smart OR, AI PACS, qSOFA, PGx, CMMS NĐ98, Dược lâm sàng TDM, Dinh dưỡng TPN, FIM, YHCT, ESG & Bộ 70+ Phân hệ Y khoa Chuẩn JCI (232 Tests Passed 100% Green) |
-| 4 | **Võ Lê Gia Bảo** | **Consultation, Records & Analytics** | Màn hình hàng đợi khám của Bác sĩ, Lập bệnh án & Kê đơn thuốc lặp, Upload/Download tệp y tế bảo mật (Policy), Dashboard Quản trị viên |
+| 3 | **Nguyễn Văn Hưng** | **Patient Reception, Clinical Safety & Smart Hospital Suite** | Quản lý Hồ sơ BN, Bàn tiếp nhận, Kiosk sảnh, Thuốc độc TT20, Cấp cứu Triage ATS, Báo động đỏ, NEWS2 & RRT, Chuỗi lạnh IoT, CSSD, Smart OR, AI PACS, qSOFA, PGx, CMMS NĐ98, Dược lâm sàng TDM, Dinh dưỡng TPN, FIM, YHCT, ESG & Bộ 70+ Phân hệ Y khoa Chuẩn JCI (237 Tests Passed 100% Green) |
+| 4 | **Võ Lê Gia Bảo** | **Consultation, Records & Analytics** | Màn hình hàng đợi khám của Bác sĩ, Lập bệnh án & Kê đơn thuốc lặp, Upload/Download tệp y tế bảo mật (Policy), Dashboard Quản trị viên (5 Tests Passed 100% Green) |
 
 ---
 
@@ -24,9 +24,9 @@ Dự án được xây dựng và đóng góp chính thức qua Pull Requests tr
 | Thành viên | GitHub Username | Vai trò & Đóng góp chính | Trạng thái tích hợp |
 | :--- | :--- | :--- | :---: |
 | **Nguyễn Thành Quý** | [@quy0358](https://github.com/quy0358) | **Project Lead & Core Architect**: Khung nền tảng Laravel 12, Auth & RBAC, Booking Engine, Master Layouts, Quản lý User | [![Merged](https://img.shields.io/badge/Status-Core%20Maintainer-success)]() |
-| **Nguyễn Văn Hưng** | [@hung090725](https://github.com/hung090725) | **Patient Reception, Clinical Safety & Smart Hospital Suite**: Phát triển trọn bộ 70+ phân hệ y khoa chuyên sâu (Smart OR, PACS-AI Triage, qSOFA Sepsis, Gen PGx, CMMS NĐ98, HAI-ASP, RFID Mẹ-Bé, Tumor Board, 83 Tiêu chí BYT, TDM Dược Lâm Sàng, TPN, FIM PHCN, YHCT Thập Bát Phản, Bhutani Vàng Da, Sữa Mẹ Pasteur, ESG & ALARA, 232 Unit/Feature Tests xanh 100%) | [![PR #4 Active](https://img.shields.io/badge/PR%20%234-Active%20%E2%80%A2%2070%2B%20Modules-success)]() [![Tests](https://img.shields.io/badge/PHPUnit-232%2F232%20Green-brightgreen)]() |
+| **Nguyễn Văn Hưng** | [@hung090725](https://github.com/hung090725) | **Patient Reception, Clinical Safety & Smart Hospital Suite**: Phát triển trọn bộ 70+ phân hệ y khoa chuyên sâu (Smart OR, PACS-AI Triage, qSOFA Sepsis, Gen PGx, CMMS NĐ98, HAI-ASP, RFID Mẹ-Bé, Tumor Board, 83 Tiêu chí BYT, TDM Dược Lâm Sàng, TPN, FIM PHCN, YHCT Thập Bát Phản, Bhutani Vàng Da, Sữa Mẹ Pasteur, ESG & ALARA, 237 Unit/Feature Tests xanh 100%) | [![PR #4 Merged](https://img.shields.io/badge/PR%20%234-Merged-success)]() [![Tests](https://img.shields.io/badge/PHPUnit-237%2F237%20Green-brightgreen)]() |
 | **Nguyễn Văn Đạt** | [@jtadd123](https://github.com/jtadd123) | **Master Data & Public Portal**: Quản lý Chuyên khoa (CRUD), Bác sĩ, Lịch trực ca tuần, Danh bạ bác sĩ công khai & Trang chủ | [![PR #1 Merged](https://img.shields.io/badge/PR%20%231-Merged-blueviolet)]() |
-| **Võ Lê Gia Bảo** | [@gbao289](https://github.com/gbao289) | **Consultation, Records & Analytics**: Bàn khám bác sĩ, Bệnh án điện tử, Đơn thuốc lặp, File y tế bảo mật, Dashboard thống kê | [![In Progress](https://img.shields.io/badge/Status-In%20Progress-orange)]() |
+| **Võ Lê Gia Bảo** | [@gbao289](https://github.com/gbao289) | **Consultation, Records & Analytics**: Bàn khám bác sĩ, Bệnh án điện tử, Đơn thuốc lặp, File y tế bảo mật qua Policy, Dashboard thống kê nâng cao | [![PR #5 Merged](https://img.shields.io/badge/PR%20%235-Merged-success)]() [![Tests](https://img.shields.io/badge/PHPUnit-5%2F5%20Green-brightgreen)]() |
 
 ---
 
