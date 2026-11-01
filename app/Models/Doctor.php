@@ -99,4 +99,57 @@ class Doctor extends Model
 
         return $shifts ?: 'Nghỉ trực';
     }
+
+    /**
+     * Registered leave requests for this doctor.
+     */
+    public function leaves()
+    {
+        return $this->hasMany(DoctorLeave::class, 'doctor_id');
+    }
+
+    /**
+     * Substitution assignments where this doctor acts as a substitute.
+     */
+    public function substitutions()
+    {
+        return $this->hasMany(DoctorLeave::class, 'substitute_doctor_id');
+    }
+
+    /**
+     * Check if doctor is on approved leave on a given date (defaults to today).
+     */
+    public function isOnLeave(?string $date = null): bool
+    {
+        $checkDate = $date ? \Carbon\Carbon::parse($date)->toDateString() : \Carbon\Carbon::today()->toDateString();
+
+        return $this->leaves()
+            ->where('status', 'approved')
+            ->where('start_date', '<=', $checkDate)
+            ->where('end_date', '>=', $checkDate)
+            ->exists();
+    }
+
+    /**
+     * Get active leave object for today if present.
+     */
+    public function getCurrentLeaveAttribute(): ?DoctorLeave
+    {
+        $today = \Carbon\Carbon::today()->toDateString();
+
+        return $this->leaves()
+            ->with('substituteDoctor.user')
+            ->where('status', 'approved')
+            ->where('start_date', '<=', $today)
+            ->where('end_date', '>=', $today)
+            ->first();
+    }
+
+    /**
+     * Check if currently on leave today.
+     */
+    public function getIsOnLeaveTodayAttribute(): bool
+    {
+        return $this->isOnLeave();
+    }
 }

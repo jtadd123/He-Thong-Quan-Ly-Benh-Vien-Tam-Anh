@@ -8,6 +8,9 @@
         <a href="{{ route('admin.doctors.schedule', $doctor) }}" class="btn btn-outline-info d-inline-flex align-items-center gap-1">
             <i class="bi bi-calendar3"></i> Cấu hình lịch trực
         </a>
+        <a href="{{ route('admin.doctors.leaves', $doctor) }}" class="btn btn-outline-warning d-inline-flex align-items-center gap-1">
+            <i class="bi bi-calendar2-x"></i> Lịch nghỉ & Trực thay
+        </a>
         <a href="{{ route('admin.doctors.edit', $doctor) }}" class="btn btn-outline-primary d-inline-flex align-items-center gap-1">
             <i class="bi bi-pencil-square"></i> Chỉnh sửa
         </a>

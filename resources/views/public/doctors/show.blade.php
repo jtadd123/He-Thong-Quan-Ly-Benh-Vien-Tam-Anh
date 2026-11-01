@@ -90,6 +90,33 @@
 
     <!-- Doctor Details & Schedules -->
     <div class="col-lg-8">
+        @if($doctor->current_leave)
+            <div class="alert alert-warning border-0 shadow-sm rounded-4 p-4 mb-4">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="fs-2 text-warning">
+                        <i class="bi bi-calendar2-range-fill"></i>
+                    </div>
+                    <div>
+                        <h6 class="alert-heading fw-bold mb-1">
+                            Thông báo vắng mặt: {{ $doctor->current_leave->reason }}
+                        </h6>
+                        <p class="mb-2 small text-dark">
+                            Bác sĩ có kế hoạch công tác / vắng mặt từ ngày <strong>{{ $doctor->current_leave->start_date->format('d/m/Y') }}</strong> đến ngày <strong>{{ $doctor->current_leave->end_date->format('d/m/Y') }}</strong>.
+                        </p>
+                        @if($doctor->current_leave->substituteDoctor)
+                            <div class="p-2 bg-white rounded-3 border d-inline-flex align-items-center gap-2">
+                                <span class="badge bg-success rounded-pill"><i class="bi bi-shield-check"></i> Bác sĩ trực thay</span>
+                                <span class="fw-bold text-dark">{{ $doctor->current_leave->substituteDoctor->full_name_with_title }}</span>
+                                <a href="{{ route('public.doctors.show', $doctor->current_leave->substituteDoctor) }}" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-2 ms-2">
+                                    Xem hồ sơ BS trực thay
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Bio -->
         <div class="card shadow-sm border-0 rounded-4 mb-4">
             <div class="card-header bg-white py-3 border-bottom">

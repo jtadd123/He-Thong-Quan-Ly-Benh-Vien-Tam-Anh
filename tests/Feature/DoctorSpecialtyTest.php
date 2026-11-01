@@ -280,4 +280,46 @@ class DoctorSpecialtyTest extends TestCase
             $this->assertTrue(true);
         }
     }
+
+    public function test_admin_can_view_doctor_leaves_page(): void
+    {
+        $doctor = Doctor::first();
+        if ($doctor) {
+            $response = $this->actingAs($this->admin)->get(route('admin.doctors.leaves', $doctor));
+            $response->assertStatus(200);
+            $response->assertSee('Quản Lý Nghỉ Phép & Ủy Quyền Trực Thay');
+        } else {
+            $this->assertTrue(true);
+        }
+    }
+
+    public function test_admin_can_store_and_delete_doctor_leave(): void
+    {
+        $doctor = Doctor::first();
+        if ($doctor) {
+            $response = $this->actingAs($this->admin)->post(route('admin.doctors.leaves.store', $doctor), [
+                'start_date' => now()->toDateString(),
+                'end_date' => now()->addDays(3)->toDateString(),
+                'reason' => 'Tham dự Hội nghị Y khoa Quốc tế',
+                'status' => 'approved',
+                'notes' => 'Kiểm thử nghỉ phép tự động',
+            ]);
+
+            $response->assertRedirect(route('admin.doctors.leaves', $doctor));
+            $this->assertDatabaseHas('doctor_leaves', [
+                'doctor_id' => $doctor->id,
+                'reason' => 'Tham dự Hội nghị Y khoa Quốc tế',
+                'status' => 'approved',
+            ]);
+
+            $this->assertTrue($doctor->fresh()->isOnLeave());
+
+            $leave = $doctor->leaves()->latest()->first();
+            $deleteResponse = $this->actingAs($this->admin)->delete(route('admin.doctors.leaves.destroy', $leave));
+            $deleteResponse->assertRedirect(route('admin.doctors.leaves', $doctor));
+            $this->assertDatabaseMissing('doctor_leaves', ['id' => $leave->id]);
+        } else {
+            $this->assertTrue(true);
+        }
+    }
 }

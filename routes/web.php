@@ -164,9 +164,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::patch('/specialties/{specialty}/toggle-status', [SpecialtyController::class, 'toggleStatus'])->name('specialties.toggle-status');
     Route::resource('specialties', SpecialtyController::class);
 
-    // Quản lý Bác sĩ & Lịch trực tuần
+    // Quản lý Bác sĩ & Lịch trực tuần & Nghỉ phép
     Route::get('/doctors/{doctor}/schedule', [DoctorManagementController::class, 'schedule'])->name('doctors.schedule');
     Route::put('/doctors/{doctor}/schedule', [DoctorManagementController::class, 'updateSchedule'])->name('doctors.schedule.update');
+    Route::get('/doctors/{doctor}/leaves', [DoctorManagementController::class, 'leaves'])->name('doctors.leaves');
+    Route::post('/doctors/{doctor}/leaves', [DoctorManagementController::class, 'storeLeave'])->name('doctors.leaves.store');
+    Route::delete('/doctors/leaves/{leave}', [DoctorManagementController::class, 'destroyLeave'])->name('doctors.leaves.destroy');
     Route::patch('/doctors/{doctor}/toggle-availability', [DoctorManagementController::class, 'toggleAvailability'])->name('doctors.toggle-availability');
     Route::resource('doctors', DoctorManagementController::class);
 });

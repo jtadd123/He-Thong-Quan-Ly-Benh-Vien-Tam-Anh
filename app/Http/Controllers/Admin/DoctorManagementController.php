@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDoctorRequest;
 use App\Http\Requests\UpdateDoctorRequest;
 use App\Models\Doctor;
+use App\Models\DoctorLeave;
 use App\Models\DoctorSchedule;
 use App\Models\Specialty;
 use App\Models\User;
@@ -297,5 +298,56 @@ class DoctorManagementController extends Controller
 
         $statusText = $doctor->is_available ? 'sẵn sàng khám' : 'tạm dừng nhận khám';
         return back()->with('success', "Đã chuyển trạng thái bác sĩ sang: {$statusText}!");
+    }
+
+    /**
+     * View and manage leave / vacation requests for the doctor.
+     */
+    public function leaves(Doctor $doctor): View
+    {
+        $doctor->load(['user', 'specialty', 'leaves.substituteDoctor.user']);
+
+        // Doctors in same specialty excluding current doctor
+        $compatibleDoctors = Doctor::with('user')
+            ->where('specialty_id', $doctor->specialty_id)
+            ->where('id', '!=', $doctor->id)
+            ->where('is_available', true)
+            ->get();
+
+        $leaves = $doctor->leaves()->with('substituteDoctor.user')->latest('start_date')->get();
+
+        return view('admin.doctors.leaves', compact('doctor', 'leaves', 'compatibleDoctors'));
+    }
+
+    /**
+     * Store a new doctor leave request with optional substitute doctor.
+     */
+    public function storeLeave(Request $request, Doctor $doctor): RedirectResponse
+    {
+        $validated = $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'reason' => 'required|string|max:255',
+            'substitute_doctor_id' => 'nullable|exists:doctors,id|different:doctor_id',
+            'status' => 'required|in:approved,pending,cancelled',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $doctor->leaves()->create($validated);
+
+        return redirect()->route('admin.doctors.leaves', $doctor)
+            ->with('success', 'Đã ghi nhận lịch nghỉ phép / công tác cho bác sĩ thành công!');
+    }
+
+    /**
+     * Delete or cancel a doctor leave request.
+     */
+    public function destroyLeave(DoctorLeave $leave): RedirectResponse
+    {
+        $doctorId = $leave->doctor_id;
+        $leave->delete();
+
+        return redirect()->route('admin.doctors.leaves', $doctorId)
+            ->with('success', 'Đã hủy lịch nghỉ phép thành công!');
     }
 }
