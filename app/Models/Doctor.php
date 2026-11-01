@@ -18,6 +18,7 @@ class Doctor extends Model
         'consultation_fee',
         'bio',
         'room_number',
+        'avatar',
         'is_available',
     ];
 
@@ -59,5 +60,31 @@ class Doctor extends Model
         $qualification = $this->qualification ? "{$this->qualification} " : '';
         $name = $this->user ? $this->user->name : 'Bác sĩ';
         return "{$qualification}{$name}";
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if ($this->avatar && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->avatar)) {
+            return asset('storage/' . $this->avatar);
+        }
+        return null;
+    }
+
+    /**
+     * Check if doctor has any active shift today.
+     */
+    public function getIsOnDutyTodayAttribute(): bool
+    {
+        $today = strtolower(now()->format('l'));
+        return $this->schedules->where('day_of_week', $today)->where('is_active', true)->isNotEmpty();
+    }
+
+    /**
+     * Get active shifts for today.
+     */
+    public function getTodaySchedulesAttribute()
+    {
+        $today = strtolower(now()->format('l'));
+        return $this->schedules->where('day_of_week', $today)->where('is_active', true);
     }
 }

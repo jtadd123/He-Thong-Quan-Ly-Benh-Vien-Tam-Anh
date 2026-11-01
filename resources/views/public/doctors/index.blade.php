@@ -60,8 +60,12 @@
             <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
                 <div class="card-body p-4 d-flex flex-column">
                     <div class="d-flex align-items-start gap-3 mb-3">
-                        <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center fw-bold fs-3 flex-shrink-0" style="width: 64px; height: 64px; border: 2px solid #e2e8f0;">
-                            <i class="bi bi-person-badge"></i>
+                        <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center fw-bold fs-3 flex-shrink-0 overflow-hidden" style="width: 64px; height: 64px; border: 2px solid #e2e8f0;">
+                            @if($doctor->avatar_url)
+                                <img src="{{ $doctor->avatar_url }}" alt="{{ $doctor->full_name_with_title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            @else
+                                <i class="bi bi-person-badge"></i>
+                            @endif
                         </div>
                         <div>
                             @if($doctor->specialty)

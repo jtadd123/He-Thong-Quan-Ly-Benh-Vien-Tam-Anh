@@ -165,6 +165,33 @@ class DoctorSpecialtyTest extends TestCase
         }
     }
 
+    public function test_admin_can_upload_avatar_for_doctor(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $doctor = Doctor::first();
+        if ($doctor && $doctor->user) {
+            $file = \Illuminate\Http\UploadedFile::fake()->image('avatar.jpg', 300, 300);
+
+            $response = $this->actingAs($this->admin)->put(route('admin.doctors.update', $doctor), [
+                'name' => $doctor->user->name,
+                'email' => $doctor->user->email,
+                'specialty_id' => $doctor->specialty_id,
+                'qualification' => $doctor->qualification,
+                'room_number' => $doctor->room_number,
+                'consultation_fee' => $doctor->consultation_fee,
+                'avatar' => $file,
+            ]);
+
+            $response->assertRedirect(route('admin.doctors.index'));
+            $doctor->refresh();
+            $this->assertNotNull($doctor->avatar);
+            \Illuminate\Support\Facades\Storage::disk('public')->assertExists($doctor->avatar);
+        } else {
+            $this->assertTrue(true);
+        }
+    }
+
     public function test_public_can_view_about_page(): void
     {
         $response = $this->get(route('about'));

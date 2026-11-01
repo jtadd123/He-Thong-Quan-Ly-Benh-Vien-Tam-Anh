@@ -25,6 +25,7 @@ class UpdateDoctorRequest extends FormRequest
             'qualification' => ['required', 'string', 'max:100'],
             'consultation_fee' => ['required', 'numeric', 'min:0'],
             'room_number' => ['required', 'string', 'max:50'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'bio' => ['nullable', 'string', 'max:2000'],
             'is_available' => ['nullable', 'boolean'],
         ];

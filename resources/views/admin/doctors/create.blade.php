@@ -15,7 +15,7 @@
     <div class="col-lg-10">
         <div class="card shadow-sm border-0">
             <div class="card-body p-4">
-                <form method="POST" action="{{ route('admin.doctors.store') }}">
+                <form method="POST" action="{{ route('admin.doctors.store') }}" enctype="multipart/form-data">
                     @csrf
 
                     <!-- Tài khoản bác sĩ -->
@@ -118,6 +118,15 @@
                                 <span class="input-group-text">đ</span>
                             </div>
                             @error('consultation_fee')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="avatar" class="form-label fw-semibold">Ảnh chân dung bác sĩ (Avatar)</label>
+                            <input type="file" class="form-control @error('avatar') is-invalid @enderror" id="avatar" name="avatar" accept="image/jpeg,image/png,image/jpg,image/webp">
+                            <small class="text-muted">Định dạng JPG, PNG, WEBP (Tối đa 2MB)</small>
+                            @error('avatar')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

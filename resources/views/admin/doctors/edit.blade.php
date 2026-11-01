@@ -18,7 +18,7 @@
     <div class="col-lg-10">
         <div class="card shadow-sm border-0">
             <div class="card-body p-4">
-                <form method="POST" action="{{ route('admin.doctors.update', $doctor) }}">
+                <form method="POST" action="{{ route('admin.doctors.update', $doctor) }}" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -93,6 +93,21 @@
                                 <span class="input-group-text">đ</span>
                             </div>
                             @error('consultation_fee')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="avatar" class="form-label fw-semibold">Ảnh chân dung bác sĩ (Avatar)</label>
+                            @if($doctor->avatar_url)
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <img src="{{ $doctor->avatar_url }}" alt="{{ $doctor->full_name_with_title }}" class="rounded-circle border" style="width: 48px; height: 48px; object-fit: cover;">
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Đã có ảnh đại diện. Chọn tệp mới nếu muốn thay đổi.</small>
+                                </div>
+                            @endif
+                            <input type="file" class="form-control @error('avatar') is-invalid @enderror" id="avatar" name="avatar" accept="image/jpeg,image/png,image/jpg,image/webp">
+                            <small class="text-muted">Định dạng JPG, PNG, WEBP (Tối đa 2MB)</small>
+                            @error('avatar')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

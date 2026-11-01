@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class DoctorManagementController extends Controller
@@ -87,12 +88,18 @@ class DoctorManagementController extends Controller
                 $userId = $user->id;
             }
 
+            $avatarPath = null;
+            if ($request->hasFile('avatar')) {
+                $avatarPath = $request->file('avatar')->store('doctors', 'public');
+            }
+
             $doctor = Doctor::create([
                 'user_id' => $userId,
                 'specialty_id' => $data['specialty_id'],
                 'qualification' => $data['qualification'],
                 'consultation_fee' => $data['consultation_fee'],
                 'room_number' => $data['room_number'],
+                'avatar' => $avatarPath,
                 'bio' => $data['bio'] ?? null,
                 'is_available' => $request->has('is_available'),
             ]);
@@ -166,15 +173,24 @@ class DoctorManagementController extends Controller
                 ]);
             }
 
-            // Update Doctor profile
-            $doctor->update([
+            $updateFields = [
                 'specialty_id' => $data['specialty_id'],
                 'qualification' => $data['qualification'],
                 'consultation_fee' => $data['consultation_fee'],
                 'room_number' => $data['room_number'],
                 'bio' => $data['bio'] ?? null,
                 'is_available' => $request->has('is_available'),
-            ]);
+            ];
+
+            if ($request->hasFile('avatar')) {
+                if ($doctor->avatar && Storage::disk('public')->exists($doctor->avatar)) {
+                    Storage::disk('public')->delete($doctor->avatar);
+                }
+                $updateFields['avatar'] = $request->file('avatar')->store('doctors', 'public');
+            }
+
+            // Update Doctor profile
+            $doctor->update($updateFields);
         });
 
         return redirect()->route('admin.doctors.index')
@@ -189,6 +205,10 @@ class DoctorManagementController extends Controller
         if ($doctor->appointments()->whereIn('status', ['pending', 'confirmed'])->exists()) {
             return redirect()->route('admin.doctors.index')
                 ->with('error', 'Không thể xóa bác sĩ này vì đang có lịch hẹn khám sắp tới hoặc đang chờ xử lý.');
+        }
+
+        if ($doctor->avatar && Storage::disk('public')->exists($doctor->avatar)) {
+            Storage::disk('public')->delete($doctor->avatar);
         }
 
         $doctor->delete();

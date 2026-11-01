@@ -22,8 +22,12 @@
     <div class="col-lg-4">
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body p-4 text-center">
-                <div class="rounded-circle bg-light text-primary d-inline-flex align-items-center justify-content-center mb-3 fs-1" style="width: 85px; height: 85px; border: 2px solid #e2e8f0;">
-                    <i class="bi bi-person-badge"></i>
+                <div class="rounded-circle bg-light text-primary d-inline-flex align-items-center justify-content-center mb-3 fs-1 overflow-hidden" style="width: 85px; height: 85px; border: 2px solid #e2e8f0;">
+                    @if($doctor->avatar_url)
+                        <img src="{{ $doctor->avatar_url }}" alt="{{ $doctor->full_name_with_title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    @else
+                        <i class="bi bi-person-badge"></i>
+                    @endif
                 </div>
                 <h4 class="fw-bold text-dark mb-1">{{ $doctor->full_name_with_title }}</h4>
                 <div class="mb-2">
