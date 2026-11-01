@@ -11,6 +11,62 @@
     </x-slot:actions>
 </x-page-header>
 
+<!-- Quick Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex align-items-center justify-content-center fs-4" style="width: 50px; height: 50px;">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+                <div>
+                    <span class="text-muted small">Tổng số Bác sĩ</span>
+                    <h4 class="fw-bold text-dark mb-0">{{ $stats['total'] }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-success bg-opacity-10 text-success d-inline-flex align-items-center justify-content-center fs-4" style="width: 50px; height: 50px;">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div>
+                    <span class="text-muted small">Sẵn sàng nhận khám</span>
+                    <h4 class="fw-bold text-success mb-0">{{ $stats['available'] }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-warning bg-opacity-10 text-warning d-inline-flex align-items-center justify-content-center fs-4" style="width: 50px; height: 50px;">
+                    <i class="bi bi-slash-circle-fill"></i>
+                </div>
+                <div>
+                    <span class="text-muted small">Tạm dừng nhận khám</span>
+                    <h4 class="fw-bold text-warning mb-0">{{ $stats['unavailable'] }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-info bg-opacity-10 text-info d-inline-flex align-items-center justify-content-center fs-4" style="width: 50px; height: 50px;">
+                    <i class="bi bi-door-open-fill"></i>
+                </div>
+                <div>
+                    <span class="text-muted small">Phòng khám vận hành</span>
+                    <h4 class="fw-bold text-info mb-0">{{ $stats['rooms_count'] }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Filter Card -->
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body p-3">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSpecialtyRequest;
 use App\Http\Requests\UpdateSpecialtyRequest;
+use App\Models\Doctor;
 use App\Models\Specialty;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,7 +34,18 @@ class SpecialtyController extends Controller
 
         $specialties = $query->latest()->paginate(10)->withQueryString();
 
-        return view('admin.specialties.index', compact('specialties'));
+        $stats = [
+            'total' => Specialty::count(),
+            'active' => Specialty::where('is_active', true)->count(),
+            'inactive' => Specialty::where('is_active', false)->count(),
+            'doctors_count' => Doctor::count(),
+        ];
+
+        $chartSpecialties = Specialty::withCount('doctors')->orderByDesc('doctors_count')->take(8)->get();
+        $chartLabels = $chartSpecialties->pluck('name')->toArray();
+        $chartData = $chartSpecialties->pluck('doctors_count')->toArray();
+
+        return view('admin.specialties.index', compact('specialties', 'stats', 'chartLabels', 'chartData'));
     }
 
     /**

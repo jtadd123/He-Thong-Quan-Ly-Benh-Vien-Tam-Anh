@@ -48,7 +48,14 @@ class DoctorManagementController extends Controller
         $doctors = $query->latest()->paginate(10)->withQueryString();
         $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
 
-        return view('admin.doctors.index', compact('doctors', 'specialties'));
+        $stats = [
+            'total' => Doctor::count(),
+            'available' => Doctor::where('is_available', true)->count(),
+            'unavailable' => Doctor::where('is_available', false)->count(),
+            'rooms_count' => Doctor::distinct('room_number')->count('room_number'),
+        ];
+
+        return view('admin.doctors.index', compact('doctors', 'specialties', 'stats'));
     }
 
     /**

@@ -5,14 +5,105 @@
 @section('content')
 <x-page-header title="Quản lý Chuyên khoa" subtitle="Danh mục các chuyên khoa khám chữa bệnh tại Bệnh viện Tâm Anh">
     <x-slot:actions>
+        <button class="btn btn-outline-info d-inline-flex align-items-center gap-1" type="button" data-bs-toggle="collapse" data-bs-target="#specialtiesChartCollapse" aria-expanded="true">
+            <i class="bi bi-pie-chart-fill"></i> Biểu đồ thống kê
+        </button>
         <a href="{{ route('admin.specialties.create') }}" class="btn btn-primary d-inline-flex align-items-center gap-1">
             <i class="bi bi-plus-circle"></i> Thêm chuyên khoa mới
         </a>
     </x-slot:actions>
 </x-page-header>
 
+<!-- Quick Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fs-4" style="width: 50px; height: 50px;">
+                    <i class="bi bi-diagram-3-fill"></i>
+                </div>
+                <div>
+                    <span class="text-muted small">Tổng chuyên khoa</span>
+                    <h4 class="fw-bold text-dark mb-0">{{ $stats['total'] }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center fs-4" style="width: 50px; height: 50px;">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div>
+                    <span class="text-muted small">Đang hoạt động</span>
+                    <h4 class="fw-bold text-success mb-0">{{ $stats['active'] }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-warning bg-opacity-10 text-warning d-flex align-items-center justify-content-center fs-4" style="width: 50px; height: 50px;">
+                    <i class="bi bi-pause-circle-fill"></i>
+                </div>
+                <div>
+                    <span class="text-muted small">Tạm dừng</span>
+                    <h4 class="fw-bold text-warning mb-0">{{ $stats['inactive'] }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-info bg-opacity-10 text-info d-flex align-items-center justify-content-center fs-4" style="width: 50px; height: 50px;">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <span class="text-muted small">Tổng bác sĩ phụ trách</span>
+                    <h4 class="fw-bold text-info mb-0">{{ $stats['doctors_count'] }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Collapsible Visual Chart Analytics (Chart.js) -->
+<div class="collapse show mb-4" id="specialtiesChartCollapse">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-bar-chart-line-fill text-primary me-2"></i> Phân Bố Số Lượng Bác Sĩ Theo Chuyên Khoa
+                    </h6>
+                    <span class="badge bg-light text-muted border">Top chuyên khoa</span>
+                </div>
+                <div style="height: 240px; position: relative;">
+                    <canvas id="specialtyDoctorsBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-pie-chart-fill text-success me-2"></i> Trạng Thái Hoạt Động
+                    </h6>
+                    <span class="badge bg-light text-muted border">Tỷ lệ</span>
+                </div>
+                <div style="height: 240px; position: relative;" class="d-flex align-items-center justify-content-center">
+                    <canvas id="specialtyStatusDonutChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Filter & Search Card -->
-<div class="card shadow-sm border-0 mb-4">
+<div class="card shadow-sm border-0 mb-4 rounded-4">
     <div class="card-body p-3">
         <form method="GET" action="{{ route('admin.specialties.index') }}" class="row g-2 align-items-center">
             <div class="col-md-7 col-lg-6">
@@ -43,7 +134,7 @@
 </div>
 
 <!-- Specialties Table Card -->
-<div class="card shadow-sm border-0">
+<div class="card shadow-sm border-0 rounded-4">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -140,4 +231,71 @@
         @endif
     </div>
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // 1. Bar Chart: Bác sĩ theo Chuyên khoa
+    const barCtx = document.getElementById('specialtyDoctorsBarChart');
+    if (barCtx) {
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($chartLabels) !!},
+                datasets: [{
+                    label: 'Số lượng bác sĩ',
+                    data: {!! json_encode($chartData) !!},
+                    backgroundColor: 'rgba(2, 132, 199, 0.75)',
+                    borderColor: '#0284c7',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0 }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Donut Chart: Trạng thái hoạt động
+    const donutCtx = document.getElementById('specialtyStatusDonutChart');
+    if (donutCtx) {
+        new Chart(donutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Hoạt động', 'Tạm dừng'],
+                datasets: [{
+                    data: [{{ $stats['active'] }}, {{ $stats['inactive'] }}],
+                    backgroundColor: ['#10b981', '#f59e0b'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection
