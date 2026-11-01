@@ -129,7 +129,7 @@
             <span class="text-primary text-uppercase fw-bold small">Đội ngũ y tế</span>
             <h3 class="fw-bold text-dark mb-0">BÁC SĨ TIÊU BIỂU</h3>
         </div>
-        <a href="{{ route('booking.create') }}" class="btn btn-outline-primary btn-sm rounded-pill">
+        <a href="{{ route('public.doctors.index') }}" class="btn btn-outline-primary btn-sm rounded-pill">
             Xem tất cả bác sĩ <i class="bi bi-arrow-right"></i>
         </a>
     </div>
@@ -146,9 +146,12 @@
                         <h5 class="fw-bold text-dark mb-1">{{ $doctor->user->name ?? 'Bác sĩ' }}</h5>
                         <span class="text-primary small fw-semibold mb-2">{{ $doctor->specialty->name ?? 'Đa khoa' }}</span>
                         <p class="text-muted small mb-3">Phòng: <strong>{{ $doctor->room_number }}</strong> &bull; Giá khám: {{ number_format($doctor->consultation_fee, 0, ',', '.') }} đ</p>
-                        <div class="mt-auto">
-                            <a href="{{ route('booking.create', ['specialty_id' => $doctor->specialty_id, 'doctor_id' => $doctor->id]) }}" class="btn btn-outline-primary btn-sm w-100 rounded-pill">
+                        <div class="mt-auto d-grid gap-2">
+                            <a href="{{ route('booking.create', ['specialty_id' => $doctor->specialty_id, 'doctor_id' => $doctor->id]) }}" class="btn btn-primary btn-sm rounded-pill">
                                 <i class="bi bi-calendar-plus me-1"></i> Đặt lịch bác sĩ
+                            </a>
+                            <a href="{{ route('public.doctors.show', $doctor) }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                                Xem hồ sơ chi tiết
                             </a>
                         </div>
                     </div>

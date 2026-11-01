@@ -22,6 +22,16 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {{ request()->is('about*') ? 'active fw-semibold text-primary' : '' }}" href="{{ route('about') }}">
+                        <i class="bi bi-info-circle me-1"></i> Giới thiệu
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('doctors*') ? 'active fw-semibold text-primary' : '' }}" href="{{ route('public.doctors.index') }}">
+                        <i class="bi bi-people me-1"></i> Đội ngũ Bác sĩ
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {{ request()->is('booking') ? 'active fw-semibold text-primary' : '' }}" href="{{ route('booking.create') }}">
                         <i class="bi bi-calendar-plus me-1"></i> Đặt lịch khám
                     </a>

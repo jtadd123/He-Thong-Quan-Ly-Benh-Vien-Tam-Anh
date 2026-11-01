@@ -165,6 +165,13 @@ class DoctorSpecialtyTest extends TestCase
         }
     }
 
+    public function test_public_can_view_about_page(): void
+    {
+        $response = $this->get(route('about'));
+        $response->assertStatus(200);
+        $response->assertSee('TẬN TÂM VÌ SỨC KHỎE NGƯỜI BỆNH');
+    }
+
     public function test_public_can_view_doctors_directory(): void
     {
         $response = $this->get(route('public.doctors.index'));

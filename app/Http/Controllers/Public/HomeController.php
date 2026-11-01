@@ -19,4 +19,16 @@ class HomeController extends Controller
 
         return view('public.home', compact('specialties', 'doctors'));
     }
+
+    /**
+     * Show the public hospital introduction page (About Us).
+     */
+    public function about(): View
+    {
+        $specialtiesCount = Specialty::where('is_active', true)->count();
+        $doctorsCount = Doctor::where('is_available', true)->count();
+        $specialties = Specialty::where('is_active', true)->withCount('doctors')->get();
+
+        return view('public.about', compact('specialtiesCount', 'doctorsCount', 'specialties'));
+    }
 }
