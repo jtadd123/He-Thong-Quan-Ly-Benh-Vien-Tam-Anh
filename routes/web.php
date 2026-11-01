@@ -183,6 +183,7 @@ Route::prefix('doctors')->name('public.doctors.')->group(function () {
     Route::post('/symptom-match', [DoctorPublicController::class, 'matchSymptoms'])->name('symptom_match');
     Route::get('/{doctor}/vcard', [DoctorPublicController::class, 'downloadVcard'])->name('vcard');
     Route::get('/{doctor}/desk-card', [DoctorPublicController::class, 'deskCard'])->name('desk_card');
+    Route::get('/{doctor}/print', [DoctorPublicController::class, 'printProfile'])->name('print');
     Route::get('/{doctor}', [DoctorPublicController::class, 'show'])->name('show');
 });
 

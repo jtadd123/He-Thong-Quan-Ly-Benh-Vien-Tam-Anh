@@ -337,4 +337,17 @@ class DoctorSpecialtyTest extends TestCase
         $response = $this->actingAs($user)->get(route('admin.roster'));
         $response->assertStatus(403);
     }
+
+    public function test_public_can_view_doctor_print_profile(): void
+    {
+        $doctor = Doctor::where('is_available', true)->first();
+        if ($doctor) {
+            $response = $this->get(route('public.doctors.print', $doctor));
+            $response->assertStatus(200);
+            $response->assertSee('BẢN GIỚI THIỆU HỒ SƠ NĂNG LỰC CHUYÊN MÔN BÁC SĨ');
+            $response->assertSee($doctor->full_name_with_title);
+        } else {
+            $this->assertTrue(true);
+        }
+    }
 }

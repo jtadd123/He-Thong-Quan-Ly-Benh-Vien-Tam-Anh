@@ -109,6 +109,30 @@ class DoctorPublicController extends Controller
     }
 
     /**
+     * Display formal printable medical profile / CV for the doctor.
+     */
+    public function printProfile(Doctor $doctor): View
+    {
+        $doctor->load(['user', 'specialty', 'schedules' => function ($q) {
+            $q->where('is_active', true);
+        }]);
+
+        $days = [
+            'monday' => 'Thứ Hai',
+            'tuesday' => 'Thứ Ba',
+            'wednesday' => 'Thứ Tư',
+            'thursday' => 'Thứ Năm',
+            'friday' => 'Thứ Sáu',
+            'saturday' => 'Thứ Bảy',
+            'sunday' => 'Chủ Nhật',
+        ];
+
+        $qrCodeUrl = DoctorVcardService::getQrCodeUrl($doctor, 180);
+
+        return view('public.doctors.print_profile', compact('doctor', 'days', 'qrCodeUrl'));
+    }
+
+    /**
      * Show the smart symptom checker assistant page.
      */
     public function symptomChecker(): View

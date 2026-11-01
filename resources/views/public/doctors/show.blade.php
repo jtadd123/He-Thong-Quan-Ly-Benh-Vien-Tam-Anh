@@ -69,6 +69,9 @@
                         <a href="{{ route('public.doctors.desk_card', $doctor) }}" target="_blank" class="btn btn-outline-secondary btn-sm rounded-pill">
                             <i class="bi bi-printer me-1"></i> In Bảng tên để bàn phòng khám
                         </a>
+                        <a href="{{ route('public.doctors.print', $doctor) }}" target="_blank" class="btn btn-outline-info btn-sm rounded-pill">
+                            <i class="bi bi-file-earmark-pdf me-1"></i> Xuất Hồ Sơ Y Khoa (PDF/In)
+                        </a>
                     </div>
                 </div>
             </div>
