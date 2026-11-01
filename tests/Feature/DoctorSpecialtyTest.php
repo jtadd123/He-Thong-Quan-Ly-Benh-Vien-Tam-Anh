@@ -322,4 +322,19 @@ class DoctorSpecialtyTest extends TestCase
             $this->assertTrue(true);
         }
     }
+
+    public function test_admin_can_view_roster_matrix_page(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('admin.roster'));
+        $response->assertStatus(200);
+        $response->assertSee('Ma Trận Phân Ca Trực Tuần Bệnh Viện');
+        $response->assertSee('Bảng Lưới Phân Bổ 7 Ngày Trong Tuần');
+    }
+
+    public function test_non_admin_cannot_access_roster(): void
+    {
+        $user = User::factory()->create(['role' => 'patient']);
+        $response = $this->actingAs($user)->get(route('admin.roster'));
+        $response->assertStatus(403);
+    }
 }

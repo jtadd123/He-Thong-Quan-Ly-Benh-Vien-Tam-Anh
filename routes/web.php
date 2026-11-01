@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\DoctorManagementController;
+use App\Http\Controllers\Admin\DoctorRosterController;
 use App\Http\Controllers\Admin\SpecialtyController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthController;
@@ -165,6 +166,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('specialties', SpecialtyController::class);
 
     // Quản lý Bác sĩ & Lịch trực tuần & Nghỉ phép
+    Route::get('/roster', [DoctorRosterController::class, 'index'])->name('roster');
     Route::get('/doctors/{doctor}/schedule', [DoctorManagementController::class, 'schedule'])->name('doctors.schedule');
     Route::put('/doctors/{doctor}/schedule', [DoctorManagementController::class, 'updateSchedule'])->name('doctors.schedule.update');
     Route::get('/doctors/{doctor}/leaves', [DoctorManagementController::class, 'leaves'])->name('doctors.leaves');

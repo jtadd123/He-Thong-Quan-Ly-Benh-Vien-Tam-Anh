@@ -5,6 +5,9 @@
 @section('content')
 <x-page-header title="Quản lý Bác sĩ" subtitle="Danh sách đội ngũ bác sĩ, chuyên khoa phân công và lịch khám bệnh">
     <x-slot:actions>
+        <a href="{{ route('admin.roster') }}" class="btn btn-outline-info d-inline-flex align-items-center gap-1">
+            <i class="bi bi-grid-3x3-gap-fill"></i> Ma trận ca trực tuần
+        </a>
         <a href="{{ route('admin.doctors.create') }}" class="btn btn-primary d-inline-flex align-items-center gap-1">
             <i class="bi bi-person-plus-fill"></i> Thêm bác sĩ mới
         </a>
