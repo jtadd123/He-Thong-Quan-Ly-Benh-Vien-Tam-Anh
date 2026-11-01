@@ -87,4 +87,16 @@ class Doctor extends Model
         $today = strtolower(now()->format('l'));
         return $this->schedules->where('day_of_week', $today)->where('is_active', true);
     }
+
+    /**
+     * Get human-readable active shifts today.
+     */
+    public function getTodayShiftsTextAttribute(): string
+    {
+        $shifts = $this->today_schedules->pluck('shift')->map(function ($s) {
+            return $s === 'morning' ? 'Sáng' : 'Chiều';
+        })->join(' & ');
+
+        return $shifts ?: 'Nghỉ trực';
+    }
 }

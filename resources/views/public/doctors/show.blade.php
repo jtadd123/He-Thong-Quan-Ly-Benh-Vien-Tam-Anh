@@ -103,8 +103,18 @@
                         </thead>
                         <tbody>
                             @forelse($doctor->schedules->sortBy('id') as $sched)
-                                <tr>
-                                    <td class="ps-4 fw-bold text-dark">{{ $sched->day_name }}</td>
+                                @php
+                                    $isToday = (strtolower(now()->format('l')) === $sched->day_of_week);
+                                @endphp
+                                <tr class="{{ $isToday ? 'table-warning bg-opacity-25' : '' }}">
+                                    <td class="ps-4 fw-bold text-dark">
+                                        {{ $sched->day_name }}
+                                        @if($isToday)
+                                            <span class="badge bg-warning text-dark border border-warning ms-1" style="font-size: 0.7rem;">
+                                                <i class="bi bi-star-fill me-1"></i> Hôm nay
+                                            </span>
+                                        @endif
+                                    </td>
                                     <td>
                                         <span class="badge {{ $sched->shift === 'morning' ? 'bg-warning-subtle text-warning border border-warning-subtle' : 'bg-info-subtle text-info border border-info-subtle' }} rounded-pill px-3 py-1">
                                             {{ $sched->shift === 'morning' ? 'Ca Sáng' : 'Ca Chiều' }}

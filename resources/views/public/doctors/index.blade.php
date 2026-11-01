@@ -43,11 +43,22 @@
                 <button type="submit" class="btn btn-primary px-4 d-inline-flex align-items-center gap-1">
                     <i class="bi bi-search"></i> Tìm
                 </button>
-                @if(request('search') || request('specialty_id'))
+                @if(request('search') || request('specialty_id') || request()->boolean('on_duty_today'))
                     <a href="{{ route('public.doctors.index') }}" class="btn btn-outline-secondary" title="Đặt lại">
                         <i class="bi bi-arrow-counterclockwise"></i>
                     </a>
                 @endif
+            </div>
+            <div class="col-12 mt-2 pt-2 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" role="switch" name="on_duty_today" value="1" id="on_duty_today" {{ request()->boolean('on_duty_today') ? 'checked' : '' }} onchange="this.form.submit()">
+                    <label class="form-check-label fw-semibold text-dark small" for="on_duty_today">
+                        <i class="bi bi-clock-history text-success me-1"></i> Chỉ hiển thị bác sĩ có lịch trực hôm nay
+                    </label>
+                </div>
+                <span class="text-muted small">
+                    <i class="bi bi-info-circle me-1"></i> Tìm thấy <strong>{{ $doctors->total() }}</strong> bác sĩ phù hợp
+                </span>
             </div>
         </form>
     </div>
@@ -75,6 +86,17 @@
                             @endif
                             <h5 class="fw-bold text-dark mb-0 lh-sm">{{ $doctor->full_name_with_title }}</h5>
                             <small class="text-muted"><i class="bi bi-geo-alt me-1"></i> {{ $doctor->room_number }}</small>
+                            <div class="mt-1">
+                                @if($doctor->is_on_duty_today)
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1" style="font-size: 0.7rem;">
+                                        <i class="bi bi-calendar2-check-fill me-1"></i> Trực hôm nay: {{ $doctor->today_shifts_text }}
+                                    </span>
+                                @else
+                                    <span class="badge bg-light text-muted border rounded-pill px-2 py-1" style="font-size: 0.7rem;">
+                                        <i class="bi bi-calendar3 me-1"></i> Nhận đặt theo hẹn
+                                    </span>
+                                @endif
+                            </div>
                         </div>
                     </div>
 

@@ -36,6 +36,13 @@ class DoctorPublicController extends Controller
             $query->where('specialty_id', $specialtyId);
         }
 
+        if ($request->boolean('on_duty_today')) {
+            $today = strtolower(now()->format('l'));
+            $query->whereHas('schedules', function ($sq) use ($today) {
+                $sq->where('day_of_week', $today)->where('is_active', true);
+            });
+        }
+
         $doctors = $query->paginate(9)->withQueryString();
         $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
 

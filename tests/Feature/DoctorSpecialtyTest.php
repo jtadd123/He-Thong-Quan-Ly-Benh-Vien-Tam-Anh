@@ -206,6 +206,13 @@ class DoctorSpecialtyTest extends TestCase
         $response->assertSee('Danh Bạ Bác Sĩ Bệnh Viện Tâm Anh');
     }
 
+    public function test_public_can_filter_doctors_on_duty_today(): void
+    {
+        $response = $this->get(route('public.doctors.index', ['on_duty_today' => 1]));
+        $response->assertStatus(200);
+        $response->assertSee('Chỉ hiển thị bác sĩ có lịch trực hôm nay');
+    }
+
     public function test_public_can_view_single_doctor(): void
     {
         $doctor = Doctor::where('is_available', true)->first();
