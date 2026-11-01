@@ -27,8 +27,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->is('doctors*') ? 'active fw-semibold text-primary' : '' }}" href="{{ route('public.doctors.index') }}">
+                    <a class="nav-link {{ request()->is('doctors') || (request()->is('doctors/*') && !request()->is('doctors/symptom-checker*')) ? 'active fw-semibold text-primary' : '' }}" href="{{ route('public.doctors.index') }}">
                         <i class="bi bi-people me-1"></i> Đội ngũ Bác sĩ
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('doctors/symptom-checker*') ? 'active fw-semibold text-primary' : '' }}" href="{{ route('public.doctors.symptom_checker') }}">
+                        <i class="bi bi-robot text-primary me-1"></i> Trợ lý Triệu chứng <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill" style="font-size: 0.65rem;">AI</span>
                     </a>
                 </li>
                 <li class="nav-item">

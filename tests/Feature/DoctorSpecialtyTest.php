@@ -233,4 +233,24 @@ class DoctorSpecialtyTest extends TestCase
             $this->assertTrue(true);
         }
     }
+
+    public function test_public_can_view_symptom_checker_page(): void
+    {
+        $response = $this->get(route('public.doctors.symptom_checker'));
+        $response->assertStatus(200);
+        $response->assertSee('Trợ Lý Gợi Ý Chuyên Khoa & Bác Sĩ Thông Minh');
+    }
+
+    public function test_public_can_match_symptoms_via_api(): void
+    {
+        $response = $this->postJson(route('public.doctors.symptom_match'), [
+            'symptoms' => 'Tôi bị đau thắt ngực khi gắng sức và tim đập nhanh hồi hộp',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'has_match' => true,
+        ]);
+        $response->assertJsonPath('specialty.name', 'Tim mạch học');
+    }
 }

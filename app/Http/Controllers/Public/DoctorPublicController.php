@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Doctor;
 use App\Models\Specialty;
+use App\Services\SymptomMatcherService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -73,5 +75,25 @@ class DoctorPublicController extends Controller
         ];
 
         return view('public.doctors.show', compact('doctor', 'days'));
+    }
+
+    /**
+     * Show the smart symptom checker assistant page.
+     */
+    public function symptomChecker(): View
+    {
+        $specialties = Specialty::where('is_active', true)->withCount('doctors')->get();
+        return view('public.symptom_checker', compact('specialties'));
+    }
+
+    /**
+     * API endpoint to match symptoms to specialty and doctors.
+     */
+    public function matchSymptoms(Request $request, SymptomMatcherService $matcher): JsonResponse
+    {
+        $symptoms = $request->input('symptoms', '');
+        $result = $matcher->match($symptoms);
+
+        return response()->json($result);
     }
 }

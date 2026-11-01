@@ -171,9 +171,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('doctors', DoctorManagementController::class);
 });
 
-// Cổng thông tin công chúng: Danh bạ Bác sĩ
+// Cổng thông tin công chúng: Danh bạ Bác sĩ & Trợ lý Triệu chứng
 Route::prefix('doctors')->name('public.doctors.')->group(function () {
     Route::get('/', [DoctorPublicController::class, 'index'])->name('index');
+    Route::get('/symptom-checker', [DoctorPublicController::class, 'symptomChecker'])->name('symptom_checker');
+    Route::post('/symptom-match', [DoctorPublicController::class, 'matchSymptoms'])->name('symptom_match');
     Route::get('/{doctor}', [DoctorPublicController::class, 'show'])->name('show');
 });
 
