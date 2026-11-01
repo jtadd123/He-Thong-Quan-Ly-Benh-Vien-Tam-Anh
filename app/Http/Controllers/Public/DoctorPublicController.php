@@ -46,6 +46,10 @@ class DoctorPublicController extends Controller
         $doctors = $query->paginate(9)->withQueryString();
         $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
 
+        if ($request->ajax()) {
+            return view('public.doctors.partials.doctor_grid', compact('doctors'));
+        }
+
         return view('public.doctors.index', compact('doctors', 'specialties'));
     }
 

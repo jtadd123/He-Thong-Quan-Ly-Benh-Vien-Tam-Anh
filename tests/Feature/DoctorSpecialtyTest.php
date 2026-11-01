@@ -213,6 +213,15 @@ class DoctorSpecialtyTest extends TestCase
         $response->assertSee('Chỉ hiển thị bác sĩ có lịch trực hôm nay');
     }
 
+    public function test_public_can_live_search_doctors_via_ajax(): void
+    {
+        $response = $this->get(route('public.doctors.index', ['search' => 'Bác sĩ']), [
+            'HTTP_X-Requested-With' => 'XMLHttpRequest',
+        ]);
+        $response->assertStatus(200);
+        $response->assertSee('Đặt lịch khám');
+    }
+
     public function test_public_can_view_single_doctor(): void
     {
         $doctor = Doctor::where('is_available', true)->first();
