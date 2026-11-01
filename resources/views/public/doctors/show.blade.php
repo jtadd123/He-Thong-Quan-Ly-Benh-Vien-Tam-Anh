@@ -45,10 +45,31 @@
                     </div>
                 </div>
 
-                <div class="d-grid">
+                <div class="d-grid mb-3">
                     <a href="{{ route('booking.create') }}?doctor_id={{ $doctor->id }}&specialty_id={{ $doctor->specialty_id }}" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm">
                         <i class="bi bi-calendar-check me-1"></i> Đặt lịch khám với Bác sĩ
                     </a>
+                </div>
+
+                <!-- Digital Business Card & Smart QR -->
+                <div class="border-top pt-3 mt-2 text-center">
+                    <div class="d-inline-flex align-items-center gap-1 text-primary small fw-semibold mb-2">
+                        <i class="bi bi-qr-code"></i> Danh thiếp số & Mã QR Bác sĩ
+                    </div>
+                    <div class="p-2 bg-white rounded-3 border d-inline-block shadow-xs mb-2">
+                        <img src="{{ $qrCodeUrl }}" alt="QR Bác sĩ {{ $doctor->full_name_with_title }}" class="img-fluid" style="width: 140px; height: 140px;">
+                    </div>
+                    <p class="text-muted small mb-3" style="font-size: 0.75rem;">
+                        Quét bằng Camera điện thoại để lưu danh bạ hoặc đặt lịch khám nhanh.
+                    </p>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="{{ route('public.doctors.vcard', $doctor) }}" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold">
+                            <i class="bi bi-person-lines-fill me-1"></i> Lưu vào Danh bạ (.vcf)
+                        </a>
+                        <a href="{{ route('public.doctors.desk_card', $doctor) }}" target="_blank" class="btn btn-outline-secondary btn-sm rounded-pill">
+                            <i class="bi bi-printer me-1"></i> In Bảng tên để bàn phòng khám
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

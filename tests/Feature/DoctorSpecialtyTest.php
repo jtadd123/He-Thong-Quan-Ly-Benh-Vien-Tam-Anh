@@ -253,4 +253,31 @@ class DoctorSpecialtyTest extends TestCase
         ]);
         $response->assertJsonPath('specialty.name', 'Tim mạch học');
     }
+
+    public function test_public_can_download_doctor_vcard(): void
+    {
+        $doctor = Doctor::where('is_available', true)->first();
+        if ($doctor) {
+            $response = $this->get(route('public.doctors.vcard', $doctor));
+            $response->assertStatus(200);
+            $response->assertHeader('content-type', 'text/vcard; charset=utf-8');
+            $this->assertStringContainsString('BEGIN:VCARD', $response->getContent());
+            $this->assertStringContainsString('END:VCARD', $response->getContent());
+        } else {
+            $this->assertTrue(true);
+        }
+    }
+
+    public function test_public_can_view_doctor_desk_card(): void
+    {
+        $doctor = Doctor::where('is_available', true)->first();
+        if ($doctor) {
+            $response = $this->get(route('public.doctors.desk_card', $doctor));
+            $response->assertStatus(200);
+            $response->assertSee('Bảng Tên Để Bàn');
+            $response->assertSee($doctor->room_number);
+        } else {
+            $this->assertTrue(true);
+        }
+    }
 }

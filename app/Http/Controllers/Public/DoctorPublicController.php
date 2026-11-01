@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Doctor;
 use App\Models\Specialty;
+use App\Services\DoctorVcardService;
 use App\Services\SymptomMatcherService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class DoctorPublicController extends Controller
@@ -74,7 +77,35 @@ class DoctorPublicController extends Controller
             'sunday' => 'Chủ Nhật',
         ];
 
-        return view('public.doctors.show', compact('doctor', 'days'));
+        $qrCodeUrl = DoctorVcardService::getQrCodeUrl($doctor, 200);
+
+        return view('public.doctors.show', compact('doctor', 'days', 'qrCodeUrl'));
+    }
+
+    /**
+     * Download doctor's digital business card in standard .vcf vCard format.
+     */
+    public function downloadVcard(Doctor $doctor): Response
+    {
+        $doctor->load(['user', 'specialty']);
+        $vcard = DoctorVcardService::generateVcard($doctor);
+        $filename = 'bac_si_' . Str::slug($doctor->user->name ?? 'bac_si') . '.vcf';
+
+        return response($vcard, 200, [
+            'Content-Type' => 'text/vcard; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    /**
+     * Display printable table tent card for examination room desk.
+     */
+    public function deskCard(Doctor $doctor): View
+    {
+        $doctor->load(['user', 'specialty']);
+        $qrCodeUrl = DoctorVcardService::getQrCodeUrl($doctor, 280);
+
+        return view('public.doctors.desk_card', compact('doctor', 'qrCodeUrl'));
     }
 
     /**
