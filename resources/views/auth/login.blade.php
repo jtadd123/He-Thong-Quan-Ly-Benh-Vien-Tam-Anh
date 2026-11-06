@@ -5,7 +5,6 @@
 @section('content')
 <div class="row justify-content-center my-4">
     <div class="col-md-8 col-lg-5">
-        <x-alert />
         <div class="card shadow border-0 overflow-hidden">
             <div class="card-header text-white text-center py-4" style="background: linear-gradient(135deg, #0284c7 0%, #0d9488 100%);">
                 <div class="rounded-circle bg-white text-primary d-inline-flex align-items-center justify-content-center mb-2 shadow-sm" style="width: 54px; height: 54px;">

@@ -1,64 +1,87 @@
-@if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm border-0 border-start border-success border-4 rounded-3 py-3 px-3 bg-success bg-opacity-10" role="alert">
-        <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 34px; height: 34px;">
-            <i class="bi bi-check-lg fs-5"></i>
-        </div>
-        <div class="flex-grow-1 text-success-emphasis fw-medium">
-            {{ session('success') }}
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
-
-@if (session('error'))
-    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm border-0 border-start border-danger border-4 rounded-3 py-3 px-3 bg-danger bg-opacity-10" role="alert">
-        <div class="rounded-circle bg-danger text-white d-inline-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 34px; height: 34px;">
-            <i class="bi bi-exclamation-triangle-fill fs-6"></i>
-        </div>
-        <div class="flex-grow-1 text-danger-emphasis fw-medium">
-            {{ session('error') }}
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
-
-@if (session('warning'))
-    <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm border-0 border-start border-warning border-4 rounded-3 py-3 px-3 bg-warning bg-opacity-10" role="alert">
-        <div class="rounded-circle bg-warning text-white d-inline-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 34px; height: 34px;">
-            <i class="bi bi-exclamation-circle-fill fs-6"></i>
-        </div>
-        <div class="flex-grow-1 text-warning-emphasis fw-medium">
-            {{ session('warning') }}
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
-
-@if (session('info'))
-    <div class="alert alert-info alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm border-0 border-start border-info border-4 rounded-3 py-3 px-3 bg-info bg-opacity-10" role="alert">
-        <div class="rounded-circle bg-info text-white d-inline-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 34px; height: 34px;">
-            <i class="bi bi-info-circle-fill fs-6"></i>
-        </div>
-        <div class="flex-grow-1 text-info-emphasis fw-medium">
-            {{ session('info') }}
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
-
-@if ($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm border-0 border-start border-danger border-4 rounded-3 py-3 px-3 bg-danger bg-opacity-10" role="alert">
-        <div class="d-flex align-items-center mb-2">
-            <div class="rounded-circle bg-danger text-white d-inline-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 30px; height: 30px;">
-                <i class="bi bi-x-octagon-fill fs-6"></i>
+@if (session('success') || session('error') || session('warning') || session('info') || $errors->any())
+    <div class="app-toast-wrapper position-fixed" style="top: 80px; right: 24px; z-index: 99999; max-width: 420px; min-width: 300px; pointer-events: none;">
+        @if (session('success'))
+            <div class="app-toast-item shadow bg-white rounded-3 p-3 mb-2 d-flex align-items-center gap-3 border position-relative" style="pointer-events: auto; border-bottom: 3px solid #16a34a !important; animation: toastSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+                <i class="bi bi-check-circle-fill flex-shrink-0" style="font-size: 1.35rem; color: #16a34a; line-height: 1;"></i>
+                <div class="flex-grow-1 text-dark" style="font-size: 0.92rem; font-weight: 500; line-height: 1.45;">
+                    {{ session('success') }}
+                </div>
+                <button type="button" class="btn-close flex-shrink-0 ms-2" onclick="this.closest('.app-toast-item').remove()" aria-label="Close" style="font-size: 0.75rem; opacity: 0.55; cursor: pointer;"></button>
             </div>
-            <strong class="flex-grow-1 text-danger-emphasis">Đã có lỗi xảy ra! Vui lòng kiểm tra lại:</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <ul class="mb-0 ps-4 text-danger-emphasis">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
+        @endif
+
+        @if (session('error'))
+            <div class="app-toast-item shadow bg-white rounded-3 p-3 mb-2 d-flex align-items-center gap-3 border position-relative" style="pointer-events: auto; border-bottom: 3px solid #dc2626 !important; animation: toastSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+                <i class="bi bi-x-circle-fill flex-shrink-0" style="font-size: 1.35rem; color: #dc2626; line-height: 1;"></i>
+                <div class="flex-grow-1 text-dark" style="font-size: 0.92rem; font-weight: 500; line-height: 1.45;">
+                    {{ session('error') }}
+                </div>
+                <button type="button" class="btn-close flex-shrink-0 ms-2" onclick="this.closest('.app-toast-item').remove()" aria-label="Close" style="font-size: 0.75rem; opacity: 0.55; cursor: pointer;"></button>
+            </div>
+        @endif
+
+        @if (session('warning'))
+            <div class="app-toast-item shadow bg-white rounded-3 p-3 mb-2 d-flex align-items-center gap-3 border position-relative" style="pointer-events: auto; border-bottom: 3px solid #f59e0b !important; animation: toastSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+                <i class="bi bi-exclamation-triangle-fill flex-shrink-0" style="font-size: 1.35rem; color: #f59e0b; line-height: 1;"></i>
+                <div class="flex-grow-1 text-dark" style="font-size: 0.92rem; font-weight: 500; line-height: 1.45;">
+                    {{ session('warning') }}
+                </div>
+                <button type="button" class="btn-close flex-shrink-0 ms-2" onclick="this.closest('.app-toast-item').remove()" aria-label="Close" style="font-size: 0.75rem; opacity: 0.55; cursor: pointer;"></button>
+            </div>
+        @endif
+
+        @if (session('info'))
+            <div class="app-toast-item shadow bg-white rounded-3 p-3 mb-2 d-flex align-items-center gap-3 border position-relative" style="pointer-events: auto; border-bottom: 3px solid #0284c7 !important; animation: toastSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+                <i class="bi bi-info-circle-fill flex-shrink-0" style="font-size: 1.35rem; color: #0284c7; line-height: 1;"></i>
+                <div class="flex-grow-1 text-dark" style="font-size: 0.92rem; font-weight: 500; line-height: 1.45;">
+                    {{ session('info') }}
+                </div>
+                <button type="button" class="btn-close flex-shrink-0 ms-2" onclick="this.closest('.app-toast-item').remove()" aria-label="Close" style="font-size: 0.75rem; opacity: 0.55; cursor: pointer;"></button>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="app-toast-item shadow bg-white rounded-3 p-3 mb-2 border position-relative" style="pointer-events: auto; border-bottom: 3px solid #dc2626 !important; animation: toastSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="bi bi-exclamation-octagon-fill text-danger flex-shrink-0" style="font-size: 1.2rem;"></i>
+                    <strong class="text-danger flex-grow-1" style="font-size: 0.92rem;">Đã có lỗi xảy ra:</strong>
+                    <button type="button" class="btn-close" onclick="this.closest('.app-toast-item').remove()" aria-label="Close" style="font-size: 0.75rem; opacity: 0.55; cursor: pointer;"></button>
+                </div>
+                <ul class="mb-0 ps-3 small text-secondary">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
     </div>
+
+    <style>
+        @keyframes toastSlideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-16px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .toast-fade-out {
+            opacity: 0 !important;
+            transform: translateY(-10px) scale(0.96) !important;
+            transition: all 0.4s ease-in-out !important;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () {
+                document.querySelectorAll('.app-toast-item').forEach(function (el) {
+                    el.classList.add('toast-fade-out');
+                    setTimeout(function () { el.remove(); }, 400);
+                });
+            }, 4500);
+        });
+    </script>
 @endif

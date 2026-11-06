@@ -127,11 +127,10 @@
 
     @include('layouts.partials.header')
 
+    <x-alert />
+
     <main class="flex-grow-1 py-4">
         <div class="container">
-            @if(!request()->routeIs('login*') && !request()->routeIs('two-factor.*'))
-                <x-alert />
-            @endif
             @yield('content')
         </div>
     </main>
