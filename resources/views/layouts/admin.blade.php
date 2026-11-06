@@ -21,11 +21,31 @@
     <style>
         :root {
             --tam-primary: #0284c7;
+            --tam-primary-rgb: 2, 132, 199;
             --tam-primary-hover: #0369a1;
             --tam-accent: #0d9488;
             --tam-dark: #0f172a;
             --tam-sidebar-bg: #0f172a;
             --tam-sidebar-hover: #1e293b;
+            --bs-primary: #0284c7;
+            --bs-primary-rgb: 2, 132, 199;
+        }
+
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1.25rem rgba(15, 23, 42, 0.08) !important;
+        }
+
+        @media print {
+            .sidebar, .top-navbar, .no-print {
+                display: none !important;
+            }
+            body {
+                background: #fff !important;
+            }
         }
 
         body {
@@ -1459,7 +1479,52 @@
                 }
             }
         });
+
+        window.copyWithFeedback = function(text, btnEl, successMessage = 'Đã sao chép thành công!') {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text);
+            } else {
+                const tempInput = document.createElement('input');
+                tempInput.value = text;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+            }
+
+            if (btnEl) {
+                const originalHtml = btnEl.getAttribute('data-orig-html') || btnEl.innerHTML;
+                btnEl.setAttribute('data-orig-html', originalHtml);
+                btnEl.innerHTML = '<i class="bi bi-check2-all"></i> Đã chép';
+                btnEl.classList.add('btn-success', 'text-white');
+                setTimeout(() => {
+                    btnEl.innerHTML = originalHtml;
+                    btnEl.classList.remove('btn-success', 'text-white');
+                }, 2000);
+            }
+
+            const toastEl = document.getElementById('globalCopyToast');
+            const msgEl = document.getElementById('globalCopyToastMsg');
+            if (toastEl && msgEl && window.bootstrap) {
+                msgEl.textContent = successMessage;
+                const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 2500 });
+                toast.show();
+            }
+        };
     </script>
+
+    <!-- Global Copy Toast Feedback Container -->
+    <div class="position-fixed bottom-0 end-0 p-3 no-print" style="z-index: 1080;">
+        <div id="globalCopyToast" class="toast align-items-center text-bg-dark border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                    <span id="globalCopyToastMsg">Đã sao chép vào bộ nhớ tạm!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
 
     @stack('scripts')
 </body>

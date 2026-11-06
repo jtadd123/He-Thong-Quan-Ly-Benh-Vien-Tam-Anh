@@ -29,6 +29,14 @@ class SystemSetting extends Model
     }
 
     /**
+     * Alias for get() to prevent method collision or mismatch.
+     */
+    public static function getValue(string $key, mixed $default = null): mixed
+    {
+        return static::get($key, $default);
+    }
+
+    /**
      * Set/update a setting value and clear its cache.
      */
     public static function set(string $key, mixed $value, string $group = 'general', ?string $description = null): self

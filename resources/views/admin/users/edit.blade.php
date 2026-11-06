@@ -61,6 +61,11 @@
 
                         <div class="col-md-12">
                             <div class="form-check form-switch mt-2">
+                                @if($user->id === Auth::id())
+                                    <input type="hidden" name="is_active" value="1">
+                                @else
+                                    <input type="hidden" name="is_active" value="0">
+                                @endif
                                 <input class="form-check-input" type="checkbox" role="switch" id="is_active" name="is_active" value="1" {{ old('is_active', $user->is_active) ? 'checked' : '' }} {{ $user->id === Auth::id() ? 'disabled' : '' }}>
                                 <label class="form-check-label fw-semibold" for="is_active">
                                     Kích hoạt tài khoản (Cho phép đăng nhập và sử dụng hệ thống)

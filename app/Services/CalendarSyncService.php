@@ -10,6 +10,14 @@ class CalendarSyncService
     /**
      * Generate Google Calendar Web URL for 1-click addition.
      */
+    public function generateGoogleCalendarUrl(Appointment $appointment): string
+    {
+        return $this->getGoogleCalendarUrl($appointment);
+    }
+
+    /**
+     * Generate Google Calendar Web URL for 1-click addition.
+     */
     public function getGoogleCalendarUrl(Appointment $appointment): string
     {
         $appointment->loadMissing(['doctor.user', 'specialty']);

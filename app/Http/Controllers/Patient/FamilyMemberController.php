@@ -74,6 +74,7 @@ class FamilyMemberController extends Controller
             'gender' => $validated['gender'],
             'phone' => !empty($validated['phone']) ? $validated['phone'] : $guardianPhone,
             'identity_card' => $validated['id_card_number'] ?? null,
+            'insurance_code' => $validated['health_insurance_code'] ?? null,
             'medical_history' => $validated['medical_notes'] ?? null,
         ]);
 

@@ -30,23 +30,6 @@
         </button>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    @if($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-            <i class="bi bi-exclamation-octagon-fill me-2"></i>
-            @foreach($errors->all() as $err)
-                <div>{{ $err }}</div>
-            @endforeach
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     <div class="row g-4">
         <!-- Primary Patient Card -->
         <div class="col-md-4">
@@ -58,7 +41,7 @@
                     </div>
                     <h5 class="fw-bold text-dark mb-1">{{ $profile->full_name }}</h5>
                     <div class="text-muted small mb-3">
-                        <i class="bi bi-calendar-event me-1"></i>{{ \Carbon\Carbon::parse($profile->date_of_birth ?? $profile->dob)->format('d/m/Y') }} 
+                        <i class="bi bi-calendar-event me-1"></i>{{ ($profile->date_of_birth ?? $profile->dob) ? \Carbon\Carbon::parse($profile->date_of_birth ?? $profile->dob)->format('d/m/Y') : 'Chưa cập nhật' }} 
                         &bull; {{ ($profile->gender == 'male' ? 'Nam' : ($profile->gender == 'female' ? 'Nữ' : 'Khác')) }}
                     </div>
                     <ul class="list-unstyled small mb-0">
@@ -90,7 +73,7 @@
                         </div>
                         <h5 class="fw-bold text-dark mb-1">{{ $m->full_name }}</h5>
                         <div class="text-muted small mb-3">
-                            <i class="bi bi-calendar-event me-1"></i>{{ $m->date_of_birth->format('d/m/Y') }} ({{ $m->age }} tuổi) &bull; {{ $m->gender == 'male' ? 'Nam' : ($m->gender == 'female' ? 'Nữ' : 'Khác') }}
+                            <i class="bi bi-calendar-event me-1"></i>{{ $m->date_of_birth?->format('d/m/Y') ?? 'Chưa cập nhật' }} ({{ $m->age }} tuổi) &bull; {{ $m->gender == 'male' ? 'Nam' : ($m->gender == 'female' ? 'Nữ' : 'Khác') }}
                         </div>
                         <ul class="list-unstyled small mb-3">
                             @if($m->phone)

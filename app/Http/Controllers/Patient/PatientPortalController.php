@@ -98,8 +98,8 @@ class PatientPortalController extends Controller
             abort(403, 'Bạn không có quyền thực hiện thao tác trên lịch hẹn này.');
         }
 
-        if ($appointment->status !== Appointment::STATUS_PENDING) {
-            return back()->with('error', 'Chỉ có thể hủy lịch hẹn đang ở trạng thái Chờ tiếp nhận.');
+        if (!in_array($appointment->status, [Appointment::STATUS_PENDING, Appointment::STATUS_CONFIRMED, 'waitlist'])) {
+            return back()->with('error', 'Chỉ có thể hủy lịch hẹn đang ở trạng thái Chờ tiếp nhận, Đã xác nhận hoặc Đang trong hàng đợi.');
         }
 
         $request->validate([
@@ -108,24 +108,28 @@ class PatientPortalController extends Controller
             'cancellation_reason.required' => 'Vui lòng cung cấp lý do hủy hẹn.',
         ]);
 
+        $wasOccupyingSlot = in_array($appointment->status, [Appointment::STATUS_PENDING, Appointment::STATUS_CONFIRMED]);
+
         $appointment->update([
             'status' => Appointment::STATUS_CANCELLED,
             'cancellation_reason' => 'Bệnh nhân tự hủy: ' . $request->input('cancellation_reason'),
         ]);
 
-        // Auto-promote next candidate from smart waitlist
-        try {
-            $dateStr = $appointment->appointment_date instanceof \Carbon\Carbon
-                ? $appointment->appointment_date->toDateString()
-                : (string) $appointment->appointment_date;
+        // Auto-promote next candidate from smart waitlist if an active slot opened up
+        if ($wasOccupyingSlot) {
+            try {
+                $dateStr = $appointment->appointment_date instanceof \Carbon\Carbon
+                    ? $appointment->appointment_date->toDateString()
+                    : (string) $appointment->appointment_date;
 
-            app(\App\Services\WaitlistEngineService::class)->promoteNextCandidate(
-                $appointment->doctor_id,
-                $dateStr,
-                $appointment->shift
-            );
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error("Waitlist auto-promotion failed on patient cancel: " . $e->getMessage());
+                app(\App\Services\WaitlistEngineService::class)->promoteNextCandidate(
+                    $appointment->doctor_id,
+                    $dateStr,
+                    $appointment->shift
+                );
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Waitlist auto-promotion failed on patient cancel: " . $e->getMessage());
+            }
         }
 
         return back()->with('success', "Đã hủy lịch hẹn {$appointment->appointment_code} thành công.");
@@ -172,6 +176,15 @@ class PatientPortalController extends Controller
         $newDate = \Carbon\Carbon::parse($validated['appointment_date']);
         $dayOfWeek = strtolower($newDate->englishDayOfWeek);
 
+        $oldDate = $appointment->appointment_date instanceof \Carbon\Carbon
+            ? $appointment->appointment_date->toDateString()
+            : (string) $appointment->appointment_date;
+        $oldShift = $appointment->shift;
+
+        if ($oldDate === $newDate->toDateString() && $oldShift === $validated['shift']) {
+            return back()->withInput()->with('error', 'Ngày khám và ca khám mới trùng với lịch hẹn hiện tại. Vui lòng chọn ngày hoặc ca khám khác.');
+        }
+
         // Check if doctor has schedule on new date
         $schedule = \App\Models\DoctorSchedule::where('doctor_id', $appointment->doctor_id)
             ->where('day_of_week', $dayOfWeek)
@@ -189,16 +202,12 @@ class PatientPortalController extends Controller
             ->where('shift', $validated['shift'])
             ->where('id', '!=', $appointment->id)
             ->where('status', '!=', Appointment::STATUS_CANCELLED)
+            ->where('status', '!=', 'waitlist')
             ->count();
 
         if ($existingCount >= $schedule->max_patients) {
             return back()->withInput()->with('error', "Ca khám mục tiêu ngày {$newDate->format('d/m/Y')} đã nhận đủ số lượng ({$schedule->max_patients}/{$schedule->max_patients} bệnh nhân). Vui lòng chọn ngày hoặc ca khác.");
         }
-
-        $oldDate = $appointment->appointment_date instanceof \Carbon\Carbon
-            ? $appointment->appointment_date->toDateString()
-            : (string) $appointment->appointment_date;
-        $oldShift = $appointment->shift;
 
         // Perform reschedule update
         $appointment->update([

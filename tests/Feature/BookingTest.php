@@ -16,6 +16,7 @@ class BookingTest extends TestCase
     {
         parent::setUp();
         Doctor::where('is_available', false)->update(['is_available' => true]);
+        \Illuminate\Support\Facades\RateLimiter::clear('booking_throttle:127.0.0.1');
     }
 
     public function test_booking_page_renders_successfully(): void
@@ -64,10 +65,16 @@ class BookingTest extends TestCase
         ]);
 
         $response->assertSessionHas('success');
-        $appointment = Appointment::where('symptom_description', 'Sốt nhẹ và ho có đờm từ hôm qua')->first();
+        $appointment = Appointment::where('symptom_description', 'Sốt nhẹ và ho có đờm từ hôm qua')->latest('id')->first();
         $this->assertNotNull($appointment);
         $this->assertStringStartsWith('AP-', $appointment->appointment_code);
         $this->assertEquals(Appointment::STATUS_PENDING, $appointment->status);
+
+        // Verify the booking success page renders 200 OK with Google Calendar & .ics URLs
+        $successResponse = $this->get(route('booking.success', ['code' => $appointment->appointment_code]));
+        $successResponse->assertStatus(200);
+        $successResponse->assertSee($appointment->appointment_code);
+        $successResponse->assertSee('calendar.google.com/calendar/render', false);
 
         $patient = PatientProfile::where('phone', $uniquePhone)->first();
         $this->assertNotNull($patient);
@@ -120,6 +127,28 @@ class BookingTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors('shift');
+
+        // Booking with join_waitlist = 1 when slot is full should succeed and place patient on Smart Waitlist
+        \App\Models\SystemSetting::set('enable_smart_waitlist', '1');
+        $waitlistPhone = '0977' . rand(100000, 999999);
+        $waitlistResponse = $this->from('/booking')->post('/booking', [
+            'full_name' => 'Bệnh Nhân Hàng Đợi Thông Minh',
+            'phone' => $waitlistPhone,
+            'dob' => '1991-02-02',
+            'gender' => 'female',
+            'specialty_id' => $doctor->specialty_id,
+            'doctor_id' => $doctor->id,
+            'appointment_date' => $date,
+            'shift' => 'morning',
+            'symptom_description' => 'Đăng ký vào danh sách chờ thông minh khi hết chỗ',
+            'join_waitlist' => '1',
+        ]);
+
+        $waitlistResponse->assertSessionHas('warning');
+        $waitlistAppt = Appointment::where('symptom_description', 'Đăng ký vào danh sách chờ thông minh khi hết chỗ')->latest('id')->first();
+        $this->assertNotNull($waitlistAppt);
+        $this->assertEquals('waitlist', $waitlistAppt->status);
+        $this->assertStringStartsWith('WL-', $waitlistAppt->appointment_code);
     }
 
     public function test_lookup_appointment_by_code(): void
@@ -226,8 +255,9 @@ class BookingTest extends TestCase
     public function test_cannot_book_duplicate_appointment_in_same_shift(): void
     {
         $doctor = Doctor::first();
-        $targetDate = Carbon::tomorrow()->addDays(120);
+        $targetDate = Carbon::tomorrow()->addDays(15);
         $dayOfWeek = strtolower($targetDate->englishDayOfWeek);
+        Appointment::where('doctor_id', $doctor->id)->where('appointment_date', $targetDate->toDateString())->where('shift', 'morning')->delete();
 
         DoctorSchedule::updateOrCreate([
             'doctor_id' => $doctor->id,

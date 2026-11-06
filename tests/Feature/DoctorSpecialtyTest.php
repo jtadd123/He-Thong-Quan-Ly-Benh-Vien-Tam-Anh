@@ -547,6 +547,28 @@ class DoctorSpecialtyTest extends TestCase
 
     public function test_roster_matrix_detects_doctor_leave_anomaly_and_shows_leave_badge(): void
     {
+        $doctor = Doctor::first();
+        if ($doctor) {
+            $today = now();
+            $dayOfWeek = strtolower($today->englishDayOfWeek);
+            \App\Models\DoctorSchedule::updateOrCreate([
+                'doctor_id' => $doctor->id,
+                'day_of_week' => $dayOfWeek,
+                'shift' => 'morning',
+            ], [
+                'is_active' => true,
+                'max_patients' => 15,
+            ]);
+            \App\Models\DoctorLeave::updateOrCreate([
+                'doctor_id' => $doctor->id,
+                'start_date' => $today->toDateString(),
+                'end_date' => $today->copy()->addDays(2)->toDateString(),
+            ], [
+                'reason' => 'Nghỉ phép thường niên',
+                'status' => 'approved',
+            ]);
+        }
+
         $this->actingAs($this->admin);
         $response = $this->get(route('admin.roster'));
         $response->assertStatus(200);

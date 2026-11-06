@@ -30,18 +30,18 @@
                 <!-- Interactive 3-Step Visual Stepper -->
                 <div class="row g-2 mb-4 pb-3 border-bottom text-center">
                     <div class="col-4">
-                        <div class="p-2 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 text-primary fw-semibold small" id="stepperIndicator1">
-                            <i class="bi bi-1-circle-fill me-1"></i>Chuyên khoa & Bác sĩ
+                        <div class="p-2 rounded-3 bg-primary text-white fw-semibold small shadow-sm" id="stepperIndicator1">
+                            <i class="bi bi-1-circle-fill me-1" id="stepperIcon1"></i>Chuyên khoa & Bác sĩ
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="p-2 rounded-3 bg-light border text-muted fw-semibold small" id="stepperIndicator2">
-                            <i class="bi bi-2-circle me-1"></i>Hồ sơ Bệnh nhân
+                        <div class="p-2 rounded-3 bg-light border text-secondary fw-semibold small" id="stepperIndicator2">
+                            <i class="bi bi-2-circle me-1" id="stepperIcon2"></i>Hồ sơ Bệnh nhân
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="p-2 rounded-3 bg-light border text-muted fw-semibold small" id="stepperIndicator3">
-                            <i class="bi bi-3-circle me-1"></i>Triệu chứng & Xác nhận
+                        <div class="p-2 rounded-3 bg-light border text-secondary fw-semibold small" id="stepperIndicator3">
+                            <i class="bi bi-3-circle me-1" id="stepperIcon3"></i>Triệu chứng & Xác nhận
                         </div>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
 
                         <div class="col-md-4">
                             <label for="appointment_date" class="form-label fw-semibold">Ngày khám dự kiến <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control @error('appointment_date') is-invalid @enderror" id="appointment_date" name="appointment_date" value="{{ old('appointment_date', date('Y-m-d')) }}" min="{{ date('Y-m-d') }}" required>
+                            <input type="date" class="form-control @error('appointment_date') is-invalid @enderror" id="appointment_date" name="appointment_date" value="{{ old('appointment_date', date('Y-m-d')) }}" min="{{ date('Y-m-d') }}" max="{{ now()->addDays(max(1, (int) \App\Models\SystemSetting::get('max_booking_days_ahead', 30)))->format('Y-m-d') }}" required>
                             @error('appointment_date')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -326,19 +326,26 @@
         const s1 = document.getElementById('stepperIndicator1');
         const s2 = document.getElementById('stepperIndicator2');
         const s3 = document.getElementById('stepperIndicator3');
+        const ic1 = document.getElementById('stepperIcon1');
+        const ic2 = document.getElementById('stepperIcon2');
+        const ic3 = document.getElementById('stepperIcon3');
         if (!s1 || !s2 || !s3) return;
 
-        const step1Done = document.getElementById('specialty_id')?.value && document.getElementById('doctor_id')?.value && document.getElementById('shift')?.value;
-        const step2Done = document.getElementById('full_name')?.value && document.getElementById('phone')?.value && document.getElementById('dob')?.value && document.getElementById('gender')?.value;
-        const step3Done = document.getElementById('symptom_description')?.value?.trim().length > 0;
+        const step1Done = Boolean(document.getElementById('specialty_id')?.value && document.getElementById('doctor_id')?.value && document.getElementById('shift')?.value);
+        const step2Done = Boolean(document.getElementById('full_name')?.value && document.getElementById('phone')?.value && document.getElementById('dob')?.value && document.getElementById('gender')?.value);
+        const step3Done = Boolean(document.getElementById('symptom_description')?.value?.trim().length > 0);
 
-        const activeClass = 'p-2 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 text-primary fw-semibold small';
-        const doneClass = 'p-2 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25 text-success fw-semibold small';
-        const idleClass = 'p-2 rounded-3 bg-light border text-muted fw-semibold small';
+        const activeClass = 'p-2 rounded-3 bg-primary text-white fw-semibold small shadow-sm';
+        const doneClass = 'p-2 rounded-3 bg-success text-white fw-semibold small shadow-sm';
+        const idleClass = 'p-2 rounded-3 bg-light border text-secondary fw-semibold small';
 
         s1.className = step1Done ? doneClass : activeClass;
         s2.className = step2Done ? doneClass : (step1Done ? activeClass : idleClass);
         s3.className = step3Done ? doneClass : (step2Done ? activeClass : idleClass);
+
+        if (ic1) ic1.className = step1Done ? 'bi bi-check-circle-fill me-1' : 'bi bi-1-circle-fill me-1';
+        if (ic2) ic2.className = step2Done ? 'bi bi-check-circle-fill me-1' : (step1Done ? 'bi bi-2-circle-fill me-1' : 'bi bi-2-circle me-1');
+        if (ic3) ic3.className = step3Done ? 'bi bi-check-circle-fill me-1' : (step2Done ? 'bi bi-3-circle-fill me-1' : 'bi bi-3-circle me-1');
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -430,6 +437,9 @@
 
         doctorSelect.addEventListener('change', checkSlots);
         appointmentDate.addEventListener('change', checkSlots);
+        if (doctorSelect.value && appointmentDate.value) {
+            checkSlots();
+        }
 
         // Anti-Double Submit Protection
         const bookingForm = document.querySelector('form[action="{{ route('booking.store') }}"]');

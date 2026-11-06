@@ -26,6 +26,9 @@ class StoreAppointmentRequest extends FormRequest
      */
     public function rules(): array
     {
+        $maxDaysAhead = max(1, (int) \App\Models\SystemSetting::get('max_booking_days_ahead', 30));
+        $maxDate = Carbon::today()->addDays($maxDaysAhead)->toDateString();
+
         return [
             'full_name' => ['required', 'string', 'max:100'],
             'phone' => ['required', 'string', 'regex:/^(0[3|5|7|8|9])[0-9]{8}$/'],
@@ -36,15 +39,18 @@ class StoreAppointmentRequest extends FormRequest
             'identity_card' => ['nullable', 'string', 'max:20'],
             'specialty_id' => ['required', 'exists:specialties,id'],
             'doctor_id' => ['required', 'exists:doctors,id'],
-            'appointment_date' => ['required', 'date', 'after_or_equal:today'],
+            'appointment_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:' . $maxDate],
             'shift' => ['required', 'in:morning,afternoon'],
             'appointment_time' => ['nullable', 'date_format:H:i'],
             'symptom_description' => ['required', 'string', 'min:5', 'max:1000'],
+            'join_waitlist' => ['nullable', 'boolean'],
         ];
     }
 
     public function messages(): array
     {
+        $maxDaysAhead = max(1, (int) \App\Models\SystemSetting::get('max_booking_days_ahead', 30));
+
         return [
             'full_name.required' => 'Vui lòng nhập họ và tên bệnh nhân.',
             'phone.required' => 'Vui lòng nhập số điện thoại liên hệ.',
@@ -60,6 +66,7 @@ class StoreAppointmentRequest extends FormRequest
             'doctor_id.exists' => 'Bác sĩ đã chọn không tồn tại.',
             'appointment_date.required' => 'Vui lòng chọn ngày khám bệnh.',
             'appointment_date.after_or_equal' => 'Ngày khám không thể ở trong quá khứ.',
+            'appointment_date.before_or_equal' => "Hệ thống chỉ tiếp nhận đặt lịch trước tối đa {$maxDaysAhead} ngày.",
             'shift.required' => 'Vui lòng chọn ca khám (Sáng hoặc Chiều).',
             'shift.in' => 'Ca khám chỉ có thể là Sáng (morning) hoặc Chiều (afternoon).',
             'appointment_time.date_format' => 'Giờ hẹn phải theo định dạng HH:mm (ví dụ 08:30).',
@@ -135,15 +142,19 @@ class StoreAppointmentRequest extends FormRequest
                 return;
             }
 
-            // 3. Overbooking Prevention Algorithm
+            // 3. Overbooking Prevention Algorithm (with Smart Waitlist support)
             $maxPatients = $schedule->max_patients ?? 15;
             $currentAppointmentsCount = Appointment::where('doctor_id', $doctorId)
                 ->whereDate('appointment_date', $carbonDate->toDateString())
                 ->where('shift', $shift)
                 ->where('status', '!=', Appointment::STATUS_CANCELLED)
+                ->where('status', '!=', 'waitlist')
                 ->count();
 
-            if ($currentAppointmentsCount >= $maxPatients) {
+            $canJoinWaitlist = \App\Models\SystemSetting::isTrue('enable_smart_waitlist', true)
+                && $this->boolean('join_waitlist');
+
+            if ($currentAppointmentsCount >= $maxPatients && !$canJoinWaitlist) {
                 $shiftVn = $shift === 'morning' ? 'buổi sáng' : 'buổi chiều';
                 $validator->errors()->add('shift', "Ca khám {$shiftVn} ngày {$carbonDate->format('d/m/Y')} của bác sĩ đã nhận đủ số lượng tối đa ({$maxPatients}/{$maxPatients} bệnh nhân). Vui lòng chọn ca khám hoặc ngày khác.");
             }

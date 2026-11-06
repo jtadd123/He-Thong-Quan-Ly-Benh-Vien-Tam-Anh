@@ -51,12 +51,14 @@ class SystemSettingController extends Controller
     {
         $settings = $request->input('settings', []);
 
-        // Explicit boolean toggle handling for checkboxes
-        if (!isset($settings['booking_maintenance_mode'])) {
-            $settings['booking_maintenance_mode'] = '0';
-        }
-        if (!isset($settings['enable_smart_waitlist'])) {
-            $settings['enable_smart_waitlist'] = '0';
+        // Only default omitted checkboxes to '0' when the full settings form is submitted
+        if (array_key_exists('max_booking_days_ahead', $settings)) {
+            if (!isset($settings['booking_maintenance_mode'])) {
+                $settings['booking_maintenance_mode'] = '0';
+            }
+            if (!isset($settings['enable_smart_waitlist'])) {
+                $settings['enable_smart_waitlist'] = '0';
+            }
         }
 
         foreach ($settings as $key => $value) {

@@ -5,13 +5,6 @@
 @section('content')
 <x-page-header title="Cấu Hình Hệ Thống Bệnh Viện" subtitle="Quản lý tham số vận hành bệnh viện, cổng đặt lịch trực tuyến, hàng đợi và bảo mật" />
 
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
 <form action="{{ route('admin.settings.update') }}" method="POST">
     @csrf
 
@@ -47,6 +40,7 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="form-check form-switch mb-3 p-3 bg-light rounded border">
+                        <input type="hidden" name="settings[booking_maintenance_mode]" value="0">
                         <input class="form-check-input ms-0 me-3" type="checkbox" name="settings[booking_maintenance_mode]" value="1" id="maintSwitch" {{ \App\Models\SystemSetting::isTrue('booking_maintenance_mode') ? 'checked' : '' }} onchange="updateMaintPreview()">
                         <label class="form-check-label fw-bold text-danger" for="maintSwitch">
                             Bật chế độ bảo trì cổng đặt lịch (Maintenance Mode - HTTP 503)
@@ -78,6 +72,7 @@
                     </div>
 
                     <div class="form-check form-switch mb-3">
+                        <input type="hidden" name="settings[enable_smart_waitlist]" value="0">
                         <input class="form-check-input" type="checkbox" name="settings[enable_smart_waitlist]" value="1" id="waitlistSwitch" {{ \App\Models\SystemSetting::isTrue('enable_smart_waitlist', true) ? 'checked' : '' }}>
                         <label class="form-check-label fw-bold" for="waitlistSwitch">
                             Kích hoạt Hàng Đợi Chờ Thông Minh (Smart Waitlist Engine)

@@ -5,20 +5,6 @@
 @section('content')
 <x-page-header title="Giám Sát Sức Khỏe Hạ Tầng Hệ Thống" subtitle="Kiểm tra thời gian thực trạng thái Cơ sở dữ liệu, Bộ nhớ, Ổ cứng, Bộ đệm Cache và Máy chủ Email" />
 
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
-@if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-        <i class="bi bi-exclamation-octagon-fill me-2"></i>{{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
 <!-- Overall System Health Status Banner -->
 <div class="card shadow-sm border-0 mb-4 {{ $report['status'] === 'healthy' ? 'bg-success text-white' : 'bg-warning text-dark' }}">
     <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">

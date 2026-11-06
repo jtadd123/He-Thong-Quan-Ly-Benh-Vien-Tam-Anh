@@ -67,7 +67,7 @@
                         <h6 class="fw-bold text-success mb-3"><i class="bi bi-person-vcard me-1"></i> Hồ sơ Bệnh nhân liên kết</h6>
                         <div class="row g-2 small">
                             <div class="col-sm-6"><strong>Mã bệnh nhân:</strong> <code>{{ $user->patientProfile->patient_code }}</code></div>
-                            <div class="col-sm-6"><strong>Ngày sinh:</strong> {{ $user->patientProfile->dob->format('d/m/Y') }}</div>
+                            <div class="col-sm-6"><strong>Ngày sinh:</strong> {{ $user->patientProfile->dob?->format('d/m/Y') ?? '—' }}</div>
                             <div class="col-sm-6"><strong>Giới tính:</strong> {{ $user->patientProfile->gender_name }}</div>
                             <div class="col-sm-6"><strong>CCCD:</strong> {{ $user->patientProfile->identity_card ?? '—' }}</div>
                             <div class="col-sm-12"><strong>Địa chỉ:</strong> {{ $user->patientProfile->address ?? '—' }}</div>

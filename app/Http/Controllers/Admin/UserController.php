@@ -67,7 +67,7 @@ class UserController extends Controller
             'role.in' => 'Vai trò được chọn không hợp lệ.',
         ]);
 
-        User::create([
+        $newUser = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
@@ -75,6 +75,15 @@ class UserController extends Controller
             'role' => $validated['role'],
             'is_active' => $request->has('is_active') ? $request->boolean('is_active') : true,
         ]);
+
+        \App\Services\SecurityAuditService::log(
+            'user_created',
+            "Quản trị viên đã tạo mới tài khoản {$newUser->email} (Vai trò: {$newUser->role}).",
+            Auth::user(),
+            'info',
+            ['target_user_id' => $newUser->id, 'role' => $newUser->role],
+            $request
+        );
 
         return redirect()->route('admin.users.index')->with('success', 'Tạo tài khoản người dùng mới thành công!');
     }
@@ -129,6 +138,9 @@ class UserController extends Controller
             return back()->withInput()->with('error', 'Bạn không thể tự khóa tài khoản của chính mình khi đang đăng nhập.');
         }
 
+        $oldRole = $user->role;
+        $wasActive = (bool) $user->is_active;
+
         $updateData = [
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -142,6 +154,17 @@ class UserController extends Controller
         }
 
         $user->update($updateData);
+
+        $eventType = !$isActive && $wasActive ? 'user_locked' : 'user_updated';
+        $severity = !$isActive && $wasActive ? 'warning' : 'info';
+        \App\Services\SecurityAuditService::log(
+            $eventType,
+            "Cập nhật tài khoản {$user->email} (Vai trò: {$oldRole} -> {$user->role}, Trạng thái: " . ($isActive ? 'Hoạt động' : 'Đã khóa') . ").",
+            Auth::user(),
+            $severity,
+            ['target_user_id' => $user->id, 'old_role' => $oldRole, 'new_role' => $user->role, 'is_active' => $isActive],
+            $request
+        );
 
         return redirect()->route('admin.users.index')->with('success', "Cập nhật tài khoản {$user->name} thành công!");
     }
@@ -164,7 +187,17 @@ class UserController extends Controller
         }
 
         $userName = $user->name;
+        $userEmail = $user->email;
+        $userRole = $user->role;
         $user->delete();
+
+        \App\Services\SecurityAuditService::log(
+            'user_deleted',
+            "Quản trị viên đã xóa tài khoản {$userEmail} ({$userName} - Vai trò: {$userRole}).",
+            Auth::user(),
+            'warning',
+            ['deleted_email' => $userEmail, 'deleted_role' => $userRole]
+        );
 
         return redirect()->route('admin.users.index')->with('success', "Đã xóa tài khoản {$userName} thành công.");
     }

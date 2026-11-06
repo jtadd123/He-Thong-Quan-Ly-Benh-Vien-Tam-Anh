@@ -37,10 +37,17 @@
                                 <label class="form-label fw-bold text-dark mb-0">Mã xác thực TOTP (6 chữ số):</label>
                                 <span class="badge bg-primary-subtle text-primary font-monospace" id="challengeTotpCountdown">--s</span>
                             </div>
-                            <input type="text" name="code" class="form-control form-control-lg text-center font-monospace tracking-widest fw-bold mb-2" placeholder="------" maxlength="6" autofocus pattern="[0-9]{6}" autocomplete="one-time-code" style="letter-spacing: 0.4em; font-size: 1.4rem;">
+                            <input type="text" name="code" id="challengeCodeInput" class="form-control form-control-lg text-center font-monospace tracking-widest fw-bold mb-2" placeholder="------" maxlength="6" autofocus pattern="[0-9]{6}" autocomplete="one-time-code" style="letter-spacing: 0.4em; font-size: 1.4rem;">
                             <div class="progress mb-2" style="height: 4px;">
                                 <div id="challengeTotpBar" class="progress-bar bg-primary" style="width: 100%; transition: width 1s linear;"></div>
                             </div>
+                            @if(isset($currentOtp) && config('app.debug'))
+                                <div class="text-center mb-2">
+                                    <button type="button" class="btn btn-sm btn-warning text-dark fw-semibold py-0 px-3 rounded-pill" onclick="document.getElementById('challengeCodeInput').value='{{ $currentOtp }}'">
+                                        <i class="bi bi-magic me-1"></i>Điền nhanh OTP Demo: <span class="font-monospace">{{ $currentOtp }}</span>
+                                    </button>
+                                </div>
+                            @endif
                             <p class="small text-muted mb-3 text-center">Mở ứng dụng Google/Microsoft Authenticator để lấy mã 6 chữ số.</p>
                         </div>
 

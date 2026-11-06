@@ -21,10 +21,13 @@
     <style>
         :root {
             --tam-primary: #0284c7;
+            --tam-primary-rgb: 2, 132, 199;
             --tam-primary-hover: #0369a1;
             --tam-accent: #0d9488;
             --tam-dark: #1e293b;
             --tam-bg: #f8fafc;
+            --bs-primary: #0284c7;
+            --bs-primary-rgb: 2, 132, 199;
         }
 
         body {
@@ -51,7 +54,15 @@
         }
 
         .bg-primary {
-            background-color: var(--tam-primary) !important;
+            background-color: rgba(var(--bs-primary-rgb, 2, 132, 199), var(--bs-bg-opacity, 1)) !important;
+        }
+
+        .bg-primary.bg-opacity-10 {
+            background-color: rgba(2, 132, 199, 0.1) !important;
+        }
+
+        .bg-primary.bg-opacity-25 {
+            background-color: rgba(2, 132, 199, 0.25) !important;
         }
 
         .card {

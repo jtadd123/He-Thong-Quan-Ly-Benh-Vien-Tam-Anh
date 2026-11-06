@@ -19,9 +19,9 @@
                 <p style="margin: 4px 0; font-size: 14px;"><strong>Mã lịch hẹn:</strong> <span style="font-size: 16px; color: #0369a1; font-weight: bold;">{{ $appointment->appointment_code }}</span></p>
                 <p style="margin: 4px 0; font-size: 14px; color: #dc2626;"><strong>Lịch cũ:</strong> {{ \Carbon\Carbon::parse($oldDate)->format('d/m/Y') }} (Ca: {{ $oldShift == 'morning' ? 'Sáng (07:30 - 11:30)' : 'Chiều (13:30 - 17:00)' }})</p>
                 <p style="margin: 4px 0; font-size: 14px; color: #16a34a; font-weight: bold;"><strong>LỊCH MỚI:</strong> {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d/m/Y') }} (Ca: {{ $appointment->shift == 'morning' ? 'Sáng (07:30 - 11:30)' : 'Chiều (13:30 - 17:00)' }})</p>
-                <p style="margin: 4px 0; font-size: 14px;"><strong>Bác sĩ phụ trách:</strong> {{ $appointment->doctor->user->name ?? 'Theo phân công khoa' }}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Bác sĩ phụ trách:</strong> {{ $appointment->doctor->full_name_with_title ?? ($appointment->doctor->user->name ?? 'Theo phân công khoa') }}</p>
                 <p style="margin: 4px 0; font-size: 14px;"><strong>Chuyên khoa:</strong> {{ $appointment->specialty->name ?? 'Khám đa khoa' }}</p>
-                <p style="margin: 4px 0; font-size: 14px;"><strong>Số thứ tự khám:</strong> <strong style="color: #0284c7;">#{{ $appointment->queue_number }}</strong></p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Phòng khám:</strong> <strong style="color: #0284c7;">{{ $appointment->doctor->room_number ?? 'Theo hướng dẫn tại quầy' }}</strong></p>
             </div>
 
             <p style="font-size: 13px; color: #64748b; line-height: 1.5;">

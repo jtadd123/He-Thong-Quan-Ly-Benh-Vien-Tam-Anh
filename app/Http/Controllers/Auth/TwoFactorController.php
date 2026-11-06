@@ -39,11 +39,13 @@ class TwoFactorController extends Controller
         }
 
         $qrUrl = $this->totpService->getQrCodeUrl($user->email, $secret);
+        $currentOtp = $this->totpService->getCurrentCode($secret);
 
         return view('auth.two_factor_setup', [
             'user' => $user,
             'secret' => $secret,
             'qrUrl' => $qrUrl,
+            'currentOtp' => $currentOtp,
             'recoveryCodes' => $recoveryCodes,
             'isEnabled' => (bool) $user->two_factor_confirmed_at,
         ]);
@@ -123,7 +125,15 @@ class TwoFactorController extends Controller
             return redirect()->route('login');
         }
 
-        return view('auth.two_factor_challenge');
+        $userId = $request->session()->get('login.2fa.user_id');
+        $user = User::find($userId);
+        $currentOtp = ($user && $user->two_factor_secret)
+            ? $this->totpService->getCurrentCode($user->two_factor_secret)
+            : null;
+
+        return view('auth.two_factor_challenge', [
+            'currentOtp' => $currentOtp,
+        ]);
     }
 
     /**

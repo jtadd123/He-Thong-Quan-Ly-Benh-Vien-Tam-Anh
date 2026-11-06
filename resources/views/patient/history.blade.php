@@ -38,7 +38,7 @@
                     <h5 class="fw-bold mb-1 text-dark">{{ $patientProfile->full_name }}</h5>
                     <div class="d-flex flex-wrap gap-3 small text-muted">
                         <span>Mã BN: <strong class="text-primary font-monospace">{{ $patientProfile->patient_code }}</strong></span>
-                        <span>Ngày sinh: <strong>{{ $patientProfile->dob->format('d/m/Y') }}</strong></span>
+                        <span>Ngày sinh: <strong>{{ $patientProfile->dob?->format('d/m/Y') ?? 'Chưa cập nhật' }}</strong></span>
                         <span>Giới tính: <strong>{{ $patientProfile->gender_name }}</strong></span>
                         <span>SĐT: <strong>{{ $patientProfile->phone }}</strong></span>
                     </div>
@@ -118,7 +118,7 @@
                                                 <i class="bi bi-calendar2-range"></i> Đổi
                                             </a>
                                         @endif
-                                        @if($app->status === 'pending')
+                                        @if(in_array($app->status, ['pending', 'confirmed', 'waitlist']))
                                             <button type="button" class="btn btn-outline-danger" title="Hủy lịch hẹn" data-bs-toggle="modal" data-bs-target="#cancelModal-{{ $app->id }}">
                                                 <i class="bi bi-x-circle"></i>
                                             </button>
@@ -126,7 +126,7 @@
                                     </div>
 
                                     <!-- Modal Cancel Appointment -->
-                                    @if($app->status === 'pending')
+                                    @if(in_array($app->status, ['pending', 'confirmed', 'waitlist']))
                                         <div class="modal fade" id="cancelModal-{{ $app->id }}" tabindex="-1" aria-hidden="true">
                                             <div class="modal-dialog modal-dialog-centered">
                                                 <div class="modal-content text-start">

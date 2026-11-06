@@ -406,6 +406,12 @@ class TechLeadInnovationSuiteTest extends TestCase
         $currentDate = Carbon::tomorrow();
         $newDate = Carbon::tomorrow()->addDays(2);
 
+        // Clean up target slot for test isolation
+        Appointment::where('doctor_id', $doctor->id)
+            ->whereDate('appointment_date', $newDate->toDateString())
+            ->where('shift', 'afternoon')
+            ->delete();
+
         // Ensure schedule exists for both days
         DoctorSchedule::updateOrCreate(
             ['doctor_id' => $doctor->id, 'day_of_week' => strtolower($currentDate->englishDayOfWeek), 'shift' => 'morning'],

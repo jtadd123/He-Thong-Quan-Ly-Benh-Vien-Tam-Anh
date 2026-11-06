@@ -148,7 +148,13 @@
                 </tr>
                 <tr>
                     <td class="label">Trạng thái:</td>
-                    <td class="value"><span style="color: #d97706; font-weight: bold;">Chờ tiếp nhận tại quầy</span></td>
+                    <td class="value">
+                        @if($appointment->status === 'waitlist')
+                            <span style="color: #b45309; font-weight: bold;">Danh sách chờ ưu tiên (Vị trí #{{ $appointment->waitlist_position ?? 1 }})</span>
+                        @else
+                            <span style="color: #d97706; font-weight: bold;">Chờ tiếp nhận tại quầy</span>
+                        @endif
+                    </td>
                 </tr>
             </table>
 

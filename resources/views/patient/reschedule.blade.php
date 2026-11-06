@@ -18,21 +18,6 @@
                 </div>
 
                 <div class="card-body p-4">
-                    @if(session('error'))
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="bi bi-exclamation-circle me-1"></i>{{ session('error') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
-
-                    @if($errors->any())
-                        <div class="alert alert-danger py-2 small mb-3">
-                            @foreach($errors->all() as $err)
-                                <div><i class="bi bi-exclamation-circle me-1"></i>{{ $err }}</div>
-                            @endforeach
-                        </div>
-                    @endif
-
                     <!-- Current Appointment Info Box -->
                     <div class="p-3 bg-light rounded-3 border mb-4">
                         <span class="badge bg-secondary text-uppercase mb-2">Thông tin lịch hẹn hiện tại</span>
@@ -53,7 +38,7 @@
                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">Chọn ngày khám mới: <span class="text-danger">*</span></label>
-                            <input type="date" name="appointment_date" id="rescheduleDateInput" class="form-control form-control-lg" min="{{ date('Y-m-d') }}" value="{{ old('appointment_date', $appointment->appointment_date->format('Y-m-d')) }}" required>
+                            <input type="date" name="appointment_date" id="rescheduleDateInput" class="form-control form-control-lg" min="{{ date('Y-m-d') }}" max="{{ now()->addDays(max(1, (int) \App\Models\SystemSetting::get('max_booking_days_ahead', 30)))->format('Y-m-d') }}" value="{{ old('appointment_date', $appointment->appointment_date->format('Y-m-d')) }}" required>
                             <small class="text-muted">Chỉ có thể chọn ngày trong tương lai khi bác sĩ có lịch công tác.</small>
                         </div>
 

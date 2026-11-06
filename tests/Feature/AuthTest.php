@@ -9,6 +9,13 @@ use Tests\TestCase;
 
 class AuthTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        \Illuminate\Support\Facades\RateLimiter::clear('127.0.0.1');
+        User::where('email', 'patient@gmail.com')->update(['is_active' => true]);
+    }
+
     public function test_login_screen_can_be_rendered(): void
     {
         $response = $this->get('/login');
@@ -97,16 +104,18 @@ class AuthTest extends TestCase
         $user->is_active = false;
         $user->save();
 
-        $response = $this->from('/login')->post('/login', [
-            'email' => 'patient@gmail.com',
-            'password' => '123456',
-        ]);
+        try {
+            $response = $this->from('/login')->post('/login', [
+                'email' => 'patient@gmail.com',
+                'password' => '123456',
+            ]);
 
-        $this->assertGuest();
-        $response->assertSessionHasErrors('email');
-
-        // Restore active status
-        $user->is_active = true;
-        $user->save();
+            $this->assertGuest();
+            $response->assertSessionHasErrors('email');
+        } finally {
+            // Always restore active status even if assertion fails
+            $user->is_active = true;
+            $user->save();
+        }
     }
 }
