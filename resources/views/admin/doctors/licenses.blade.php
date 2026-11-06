@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const issued = this.dataset.issued;
             const expiry = this.dataset.expiry;
 
-            form.action = `/admin/doctors/${docId}/licenses`;
+            form.action = `{{ url('admin/doctors') }}/${docId}/licenses`;
             nameEl.textContent = docName;
             cchnInput.value = (cchn && cchn !== 'Chưa cập nhật') ? cchn : `00${1000 + parseInt(docId)}/BYT-CCHN`;
             if (issuer) issuerInput.value = issuer;
