@@ -242,6 +242,13 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::patch('/doctors/{doctor}/toggle-availability', [DoctorManagementController::class, 'toggleAvailability'])->name('doctors.toggle-availability');
     Route::resource('doctors', DoctorManagementController::class);
 
+    // Enterprise Medical Governance & Clinical Faculty Ecosystem (Phụ trách: NGUYỄN VĂN ĐẠT)
+    Route::get('/medical-governance', [\App\Http\Controllers\Admin\MedicalGovernanceController::class, 'index'])->name('medical-governance.index');
+    Route::get('/medical-governance/surgical-catalog', [\App\Http\Controllers\Admin\MedicalGovernanceController::class, 'surgicalCatalog'])->name('medical-governance.surgical-catalog');
+    Route::get('/medical-governance/cme-hub', [\App\Http\Controllers\Admin\MedicalGovernanceController::class, 'cmeHub'])->name('medical-governance.cme-hub');
+    Route::get('/medical-governance/guidelines', [\App\Http\Controllers\Admin\MedicalGovernanceController::class, 'guidelines'])->name('medical-governance.guidelines');
+    Route::get('/medical-governance/research', [\App\Http\Controllers\Admin\MedicalGovernanceController::class, 'research'])->name('medical-governance.research');
+
     // Technical Lead Innovation: Security Audit Trail, System Settings & Infrastructure Health
     Route::get('/security-audit', [SecurityAuditController::class, 'index'])->name('security-audit.index');
     Route::get('/security-audit/export', [SecurityAuditController::class, 'export'])->name('security-audit.export');
