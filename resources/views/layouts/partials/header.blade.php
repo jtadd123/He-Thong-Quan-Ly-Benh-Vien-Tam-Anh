@@ -17,7 +17,7 @@
 
 <!-- Topbar Medical Info -->
 <div class="topbar-medical bg-dark text-white py-1 small d-none d-lg-block" style="background-color: #0f172a !important; font-size: 0.78rem;">
-    <div class="container d-flex justify-content-between align-items-center">
+    <div class="container-fluid px-xl-5 px-lg-4 px-3 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-3 text-white-50">
             <span><i class="bi bi-geo-alt-fill text-info me-1"></i>{{ $dynamicAddress }}</span>
             <span>&bull;</span>
@@ -37,14 +37,14 @@
 </div>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top shadow-sm py-2">
-    <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url('/') }}">
-            <div class="rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 42px; height: 42px; background: linear-gradient(135deg, #0284c7 0%, #0d9488 100%);">
+    <div class="container-fluid px-xl-5 px-lg-4 px-3">
+        <a class="navbar-brand d-flex align-items-center gap-2 me-xl-4 me-lg-2 flex-shrink-0" href="{{ url('/') }}" style="white-space: nowrap;">
+            <div class="rounded-circle d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 40px; height: 40px; background: linear-gradient(135deg, #0284c7 0%, #0d9488 100%);">
                 <i class="bi bi-hospital fs-5"></i>
             </div>
             <div>
-                <span class="fw-bold d-block lh-1 text-primary text-uppercase" style="font-size: 1.15rem; color: #0284c7 !important;">{{ $dynamicHospitalName }}</span>
-                <small class="text-muted text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.8px;">Tận tâm - Chuyên nghiệp - Hiện đại</small>
+                <span class="fw-bold d-block lh-1 text-primary text-uppercase" style="font-size: 1.05rem; color: #0284c7 !important; white-space: nowrap;">{{ $dynamicHospitalName }}</span>
+                <small class="text-muted text-uppercase d-block mt-1" style="font-size: 0.65rem; letter-spacing: 0.8px; white-space: nowrap;">Tận tâm - Chuyên nghiệp - Hiện đại</small>
             </div>
         </a>
 
@@ -53,40 +53,40 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarMain">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-2 gap-lg-1 align-items-lg-center">
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->is('/') ? 'active fw-semibold text-primary' : '' }}" href="{{ url('/') }}">
+                    <a class="nav-link text-nowrap px-2 {{ request()->is('/') ? 'active fw-semibold text-primary' : '' }}" href="{{ url('/') }}">
                         <i class="bi bi-house-door me-1"></i> Trang chủ
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->is('about*') ? 'active fw-semibold text-primary' : '' }}" href="{{ route('about') }}">
+                    <a class="nav-link text-nowrap px-2 {{ request()->is('about*') ? 'active fw-semibold text-primary' : '' }}" href="{{ route('about') }}">
                         <i class="bi bi-info-circle me-1"></i> Giới thiệu
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->is('doctors') || (request()->is('doctors/*') && !request()->is('doctors/symptom-checker*')) ? 'active fw-semibold text-primary' : '' }}" href="{{ route('public.doctors.index') }}">
+                    <a class="nav-link text-nowrap px-2 {{ request()->is('doctors') || (request()->is('doctors/*') && !request()->is('doctors/symptom-checker*')) ? 'active fw-semibold text-primary' : '' }}" href="{{ route('public.doctors.index') }}">
                         <i class="bi bi-people me-1"></i> Đội ngũ Bác sĩ
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->is('doctors/symptom-checker*') ? 'active fw-semibold text-primary' : '' }}" href="{{ route('public.doctors.symptom_checker') }}">
+                    <a class="nav-link text-nowrap px-2 {{ request()->is('doctors/symptom-checker*') ? 'active fw-semibold text-primary' : '' }}" href="{{ route('public.doctors.symptom_checker') }}">
                         <i class="bi bi-robot text-primary me-1"></i> Trợ lý Triệu chứng <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill" style="font-size: 0.65rem;">AI</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->is('booking') ? 'active fw-semibold text-primary' : '' }}" href="{{ route('booking.create') }}">
+                    <a class="nav-link text-nowrap px-2 {{ request()->is('booking') ? 'active fw-semibold text-primary' : '' }}" href="{{ route('booking.create') }}">
                         <i class="bi bi-calendar-plus me-1"></i> Đặt lịch khám
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->is('booking/lookup*') ? 'active fw-semibold text-primary' : '' }}" href="{{ route('booking.lookup') }}">
+                    <a class="nav-link text-nowrap px-2 {{ request()->is('booking/lookup*') ? 'active fw-semibold text-primary' : '' }}" href="{{ route('booking.lookup') }}">
                         <i class="bi bi-search me-1"></i> Tra cứu lịch hẹn
                     </a>
                 </li>
             </ul>
 
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 flex-shrink-0">
                 @auth
                     <div class="dropdown">
                         <button class="btn btn-outline-primary dropdown-toggle d-flex align-items-center gap-2 py-1 px-3 rounded-pill" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -163,10 +163,10 @@
                         </ul>
                     </div>
                 @else
-                    <a href="{{ route('booking.create') }}" class="btn btn-primary d-none d-md-inline-flex align-items-center gap-1 rounded-pill px-3 shadow-sm" style="background-color: #0284c7; border-color: #0284c7;">
+                    <a href="{{ route('booking.create') }}" class="btn btn-primary d-none d-xl-inline-flex align-items-center gap-1 rounded-pill px-3 shadow-sm text-nowrap" style="background-color: #0284c7; border-color: #0284c7; font-size: 0.9rem;">
                         <i class="bi bi-calendar2-check"></i> Đặt lịch ngay
                     </a>
-                    <a href="{{ route('login') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 rounded-pill px-3">
+                    <a href="{{ route('login') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 rounded-pill px-3 text-nowrap" style="font-size: 0.9rem;">
                         <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
                     </a>
                 @endauth
