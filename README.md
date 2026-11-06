@@ -11,7 +11,7 @@
 | STT | Họ và tên | Vai trò chính | Trách nhiệm trọng tâm |
 | :---: | :--- | :--- | :--- |
 | 1 | **Nguyễn Thành Quý** | **Technical Lead & System Core** | Kiến trúc hệ thống, Khởi tạo dự án, Auth & RBAC Middleware, Master Layouts, Engine Đặt lịch khám, Mail thông báo & Điều phối tích hợp Git |
-| 2 | **Nguyễn Văn Đạt** | **Master Data & Public Portal** | Quản lý Chuyên khoa (CRUD), Hồ sơ Bác sĩ, Cấu hình Lịch trực ca trong tuần, Giao diện Trang chủ, Trang Giới thiệu Bệnh viện, Upload Avatar Bác sĩ, Bộ lọc Bác sĩ trực hôm nay & AJAX Live Search, Biểu đồ Chart.js thống kê, Trợ lý AI gợi ý Chuyên khoa & Bác sĩ (Symptom Matcher), Danh thiếp số vCard & Mã QR thông minh, Quản lý Nghỉ phép/Ủy quyền trực thay, Ma trận Phân ca trực Bệnh viện (Roster Matrix), Thẻ để bàn Mica, Hồ sơ Năng lực In ấn, Cùng **Bộ 12 Tính năng Nâng cao Module 2** (Thẻ QR Smart Badge, Wayfinding chỉ đường nội viện, Hồ sơ song ngữ Anh - Việt, Đánh giá & Kiểm duyệt Review, Thẻ điểm KPI Scorecard, Workload Balancer Heatmap, Quản lý CCHN/CME, Audit Logs, Emergency Readiness Code Red, Xuất/Nhập Excel & CSV chuẩn mẫu) (44 Tests Passed 100% Green) |
+| 2 | **Nguyễn Văn Đạt** | **Master Data, Public Portal & Medical Governance** | Quản lý Chuyên khoa (CRUD), Hồ sơ Bác sĩ, Lịch trực tuần, Cổng thông tin Bác sĩ & Bệnh viện, Upload Avatar, AJAX Live Search, Chart.js, AI Symptom Matcher, vCard & QR Smart Badge, Wayfinding, Hồ sơ song ngữ EN/VI, Reviews, KPI Scorecard, Workload Balancer Heatmap, CCHN/CME Hub, Audit Logs, Emergency Readiness Code Red, Cùng **Hệ sinh thái Quản trị Y khoa Toàn diện (Medical Governance)**: 970 phẫu thuật TT50/BYT, 730 phác đồ CPG, 840 ca CME, 500 NCKH & Cân bằng chống mệt mỏi Fatigue Index (174 Tests Passed 100% Green) |
 | 3 | **Nguyễn Văn Hưng** | **Patient Reception, Inpatient & Clinical Safety** | Quản lý Hồ sơ người bệnh, Bàn tiếp nhận & Check-in Kiosk sảnh, Viện phí VietQR, Quầy dược ngoại trú, An toàn truyền máu, Cảnh báo lâm sàng & Hệ thống phân hệ y tế nội viện |
 | 4 | **Võ Lê Gia Bảo** | **Consultation, Records & Analytics** | Màn hình hàng đợi khám của Bác sĩ, Lập bệnh án & Kê đơn thuốc lặp, Upload/Download tệp y tế bảo mật (Policy), Dashboard Quản trị viên, Bộ xuất Báo cáo thống kê Excel/PDF thông minh (XlsxReportWriter) & Cổng thông tin Bệnh nhân (10 Tests Passed 100% Green) |
 
@@ -24,7 +24,7 @@ Dự án được xây dựng và đóng góp chính thức qua Pull Requests tr
 | Thành viên | GitHub Username | Vai trò & Đóng góp chính | Trạng thái tích hợp |
 | :--- | :--- | :--- | :--- |
 | **Nguyễn Thành Quý** | [@quy0358](https://github.com/quy0358) | **Technical Lead & Core Architect**: Kiến trúc nền tảng Laravel 11, Master Layouts, Auth & RBAC, Booking Engine, Cùng **Bộ 10 Tính Năng Đột Phá Kiến Trúc & An Ninh Nâng Cao** (2FA TOTP RFC 6238, Smart Waitlist Engine FIFO, Calendar Sync RFC 5545, Family Health Profiles, Self-service Reschedule, Anti-Spam Honeypot, Security Audit Logging CSV, Active Device Sessions, Dynamic Settings & System Health Diagnostic Telemetry) | [![Status](https://img.shields.io/badge/Status-Core%20Architect-success)]() [![Tests](https://img.shields.io/badge/PHPUnit-415%2F415%20Green-brightgreen)]() |
-| **Nguyễn Văn Đạt** | [@jtadd123](https://github.com/jtadd123) | **Master Data & Public Portal**: Quản lý Chuyên khoa, Bác sĩ, Lịch trực tuần, Trang giới thiệu viện, Avatar bác sĩ, Bác sĩ trực hôm nay, AJAX Live Search, Chart.js Analytics, Trợ lý AI Symptom Matcher, vCard QR thông minh, Nghỉ phép ủy quyền, Ma trận ca trực Roster, Mẫu in hồ sơ năng lực PDF, Bộ 12 tính năng y tế nâng cao (QR Smart Badge, Wayfinding, Song ngữ EN/VI, Reviews, KPI Scorecard, Workload Balancer, CCHN/CME, Audit Logs, Emergency Readiness, Xuất/Nhập Excel) | [![PR #1, #7, #9 & #11 Merged](https://img.shields.io/badge/PR%20%231%2C%20%237%2C%20%239%20%26%20%2311-Merged-success)]() [![Tests](https://img.shields.io/badge/PHPUnit-44%2F44%20Green-brightgreen)]() |
+| **Nguyễn Văn Đạt** | [@jtadd123](https://github.com/jtadd123) | **Master Data, Public Portal & Medical Governance**: Quản lý Chuyên khoa, Bác sĩ, Lịch trực tuần, AI Symptom Matcher, vCard QR, Wayfinding, Song ngữ EN/VI, Reviews, KPI, Workload Balancer, CCHN, Cùng **Hệ sinh thái Quản trị Y khoa Toàn diện** (970 phẫu thuật TT50, 730 phác đồ CPG, 840 ca CME, 500 NCKH & Fatigue Balancer) | [![PR #1, #7, #9, #11 & #12 Merged](https://img.shields.io/badge/PR%20%231%2C%20%237%2C%20%239%2C%20%2311%20%26%20%2312-Merged-success)]() [![Tests](https://img.shields.io/badge/PHPUnit-174%2F174%20Green-brightgreen)]() |
 | **Nguyễn Văn Hưng** | [@hung090725](https://github.com/hung090725) | **Patient Reception, Inpatient & Clinical Safety**: Quản lý hồ sơ người bệnh, tiếp đón sảnh, Kiosk tự phục vụ, viện phí VietQR, an toàn dược & lâm sàng, Spotlight Search toàn viện và các phân hệ hỗ trợ y tế chuyên sâu | [![PR #4, #6 & #10 Merged](https://img.shields.io/badge/PR%20%234%2C%20%236%20%26%20%2310-Merged-success)]() [![Tests](https://img.shields.io/badge/PHPUnit-100%25-brightgreen)]() |
 | **Võ Lê Gia Bảo** | [@gbao289](https://github.com/gbao289) | **Consultation, Records & Analytics**: Bàn khám bác sĩ, Bệnh án điện tử, Đơn thuốc lặp, File y tế bảo mật qua Policy, Dashboard thống kê, Xuất báo cáo Excel/PDF (XlsxReportWriter) & Lịch sử bệnh nhân | [![PR #5 & #8 Merged](https://img.shields.io/badge/PR%20%235%20%26%20%238-Merged-success)]() [![Tests](https://img.shields.io/badge/PHPUnit-10%2F10%20Green-brightgreen)]() |
 
@@ -98,10 +98,10 @@ erDiagram
     10. Giám sát sức khỏe hạ tầng toàn diện thời gian thực (DB Latency, Storage Write, Cache, Mail Ping, Memory Telemetry).
 - **Tiêu chí hoàn thành:** Toàn bộ 10 phân hệ kiến trúc đã hoạt động mượt mà, 11/11 automated tests trong `TechLeadInnovationSuiteTest` đạt 100% Green.
 
-### 2. NGUYỄN VĂN ĐẠT (Chuyên khoa, Đội ngũ Bác sĩ & Smart Clinical Portal)
-- **Chi nhánh phát triển:** `feature/doctors-and-specialties` (Pull Request #1, #7, #9 & #11 - Đã Merge 100% vào `main` & `develop`)
-- **Kiểm thử tự động:** **44/44 tests pass 100% Green** (121 assertions, 0 errors)
-- **Phạm vi phụ trách mở rộng & Đóng góp toàn diện (25 Chức năng xuất sắc):**
+### 2. NGUYỄN VĂN ĐẠT (Chuyên khoa, Đội ngũ Bác sĩ, Smart Clinical Portal & Medical Governance)
+- **Chi nhánh phát triển:** `feature/doctors-and-specialties` (Pull Request #1, #7, #9, #11 & #12 - Đã Merge 100% vào `main` & `develop`)
+- **Kiểm thử tự động:** **174/174 tests pass 100% Green** (1.406 assertions, 0 errors) bao gồm: 44 tests `DoctorSpecialtyTest` + 130 tests Hệ sinh thái Quản trị Y khoa `MedicalGovernance*Test`.
+- **Phạm vi phụ trách mở rộng & Đóng góp toàn diện (30 Chức năng xuất sắc):**
   1. **Nền tảng Quản trị Dữ liệu & Phân công Lịch trực (Master Data & Scheduling Core):**
      - Thiết kế Migration & Seeder cho các bảng: `specialties`, `doctors`, `doctor_schedules`, `doctor_leaves`.
      - Xây dựng chức năng Admin quản lý Chuyên khoa (`SpecialtyController`): Thêm mới, chỉnh sửa, xem danh sách, phân trang, tự động sinh slug SEO thân thiện, chống trùng lặp tên, toggle kích hoạt/tạm dừng chuyên khoa, ràng buộc toàn vẹn dữ liệu chặn xóa chuyên khoa nếu đang có bác sĩ trực thuộc.
@@ -281,7 +281,7 @@ Nhằm nâng cao chất lượng đồ án đạt cấp độ sản phẩm tri�
 | **10** | **Giám Sát Sức Khỏe Toàn Diện (System Health)** | Bộ đo đạc vi mô thời gian thực: Độ trễ MySQL/MariaDB (ms), dung lượng ổ cứng, quyền ghi Storage, Cache read/write, Ping máy chủ Email, RAM usage | `SystemHealthCheckService.php`, `SystemHealthController.php`, `admin/system_health/` |
 
 - **Kết quả kiểm thử tự động toàn diện:** `tests/Feature/TechLeadInnovationSuiteTest.php` với **11/11 tests PASSED 100% Green (68 assertions)**.
-- **Tổng kiểm thử toàn dự án sau tích hợp PR #11:** **436 tests PASSED 100% Green (1.886 assertions)**.
+- **Tổng kiểm thử toàn dự án sau tích hợp PR #12:** **566 tests PASSED 100% Green (3.171 assertions)**.
 
 ---
 *Dự án phục vụ mục đích học tập và nghiên cứu môn học Phát triển ứng dụng Web.*
